@@ -93,7 +93,7 @@ void animation_loop(void *) {
             break;
         }
         case AppState::STAND_BY:
-            if (night_mode_manager.is_night_time()) {
+            if (app.config.power && night_mode_manager.is_night_time()) {
                 auto brightness = night_mode_manager.get_brightness();
                 app.set_brightness(brightness);
             }

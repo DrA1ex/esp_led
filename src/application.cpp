@@ -4,7 +4,7 @@ Application::Application(Storage<Config> &config_storage, NightModeManager &nigh
         config_storage(config_storage), config(config_storage.get()), night_mode_manager(night_mode_manager) {}
 
 void Application::load() {
-    analogWrite(LED_PIN, config.power ? brightness() : PIN_DISABLED);
+    set_brightness(config.power ? brightness() : PIN_DISABLED);
 }
 
 void Application::update() {
@@ -41,7 +41,9 @@ void Application::restart() {
 }
 
 void Application::set_brightness(uint16_t value) {
-    analogWrite(LED_PIN, value);
+    auto brightness = DAC_MAX_VALUE - (uint16_t) floor(
+            log10f(10 - (float) value * 9 / DAC_MAX_VALUE) * DAC_MAX_VALUE);
+    analogWrite(LED_PIN, brightness);
 }
 
 uint16_t Application::brightness() const {

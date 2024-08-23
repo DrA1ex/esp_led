@@ -1,10 +1,15 @@
 #pragma once
 
+#include "credentials.h"
 #include "sys_constants.h"
 
 #define WIFI_MODE                               (WIFI_AP_MODE)
-#define WIFI_SSID                               "ESP_LED"
-#define WIFI_PASSWORD                           "12345678"
+#define WIFI_SSID                               CREDENTIAL_WIFI_SSID
+#define WIFI_PASSWORD                           CREDENTIAL_WIFI_PASSWORD
+
+#define WEB_AUTH
+#define AUTH_USER                               CREDENTIAL_AUTH_USER
+#define AUTH_PASSWORD                           CREDENTIAL_AUTH_PASSWORD
 
 #define WIFI_CONNECTION_CHECK_INTERVAL          (5000u)                 // Interval (ms) between Wi-Fi connection check
 #define WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL    (0u)                    // Max time (ms) to wait for Wi-Fi connection before switch to AP mode

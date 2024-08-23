@@ -3,6 +3,7 @@
 #include "ESPAsyncWebServer.h"
 #include "FS.h"
 
+#include "constants.h"
 #include "debug.h"
 
 class WebServer {
@@ -21,4 +22,15 @@ public:
     }
 
     inline void add_handler(AsyncWebHandler *handler) { _server.addHandler(handler); }
+};
+
+class WebAuthHandler : public AsyncWebHandler {
+private:
+    bool _allow_local = true;
+
+public:
+    inline void set_allow_local(bool value) { _allow_local = value; }
+
+    virtual bool canHandle(AsyncWebServerRequest *request) override final;
+    virtual void handleRequest(AsyncWebServerRequest *request) override final;
 };

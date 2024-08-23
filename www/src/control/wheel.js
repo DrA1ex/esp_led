@@ -39,6 +39,7 @@ export class WheelControl extends InputControlBase {
         }
 
         this.element.onmouseup = this.element.ontouchend = (e) => {
+            this.#updatePosition(e);
             this.#endInteraction(e);
         }
 

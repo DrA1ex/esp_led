@@ -29,3 +29,16 @@ void WebServer::begin(FS *fs) {
     D_WRITE("Web server listening on port: ");
     D_PRINT(_port);
 }
+
+void WebAuthHandler::handleRequest(AsyncWebServerRequest *request) {
+    D_PRINTF("Reject request from: %s\n", request->client()->remoteIP().toString().c_str());
+
+    request->redirect("https://google.com");
+}
+
+bool WebAuthHandler::canHandle(AsyncWebServerRequest *request) {
+    bool is_local = (request->client()->getRemoteAddress() & PP_HTONL(0xffff0000UL)) == PP_HTONL(0xc0a80000UL);
+    bool auth_required = _allow_local ? !is_local : true;
+
+    return auth_required && !request->authenticate(AUTH_USER, AUTH_PASSWORD);
+}

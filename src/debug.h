@@ -3,7 +3,7 @@
 #define __DEBUG_LEVEL_VERBOSE 0
 
 #ifdef DEBUG
-#include "Arduino.h"
+#include <Arduino.h>
 
 #define D_PRINT(x) Serial.println(x)
 #define D_PRINTF(...) Serial.printf(__VA_ARGS__)

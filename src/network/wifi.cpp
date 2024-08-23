@@ -1,6 +1,26 @@
 #include "wifi.h"
 
+#ifdef ESP32
+
 #include <WiFi.h>
+
+#define __WIFI_STA wifi_mode_t::WIFI_MODE_STA
+#define __WIFI_AP wifi_mode_t::WIFI_AP
+#define __ID (ESP.getEfuseMac() & 0xffff)
+#elif ESP8266
+
+#include <ESP8266WiFi.h>
+
+#define __WIFI_STA WiFiMode::WIFI_STA
+#define __WIFI_AP WiFiMode::WIFI_AP
+#define __ID (ESP.getChipId() & 0xffff)
+#else
+#pragma message "Platform not supported"
+
+#define __WIFI_STA 0
+#define __WIFI_AP 0
+#define __ID 0
+#endif
 
 #include "constants.h"
 #include "debug.h"
@@ -37,7 +57,7 @@ void WifiManager::handle_connection() {
     if (millis() - _last_connection_check < WIFI_CONNECTION_CHECK_INTERVAL) return;
 
     _last_connection_check = millis();
-    if (WiFi.getMode() == wifi_mode_t::WIFI_MODE_STA && !WiFi.isConnected()) {
+    if (WiFi.getMode() == __WIFI_STA && !WiFi.isConnected()) {
         D_PRINT("Wi-Fi connection lost");
 
         _state = WifiManagerState::DISCONNECTED;
@@ -47,9 +67,9 @@ void WifiManager::handle_connection() {
 void WifiManager::_connect_ap() {
     if (_state != WifiManagerState::DISCONNECTED) return;
 
-    WiFi.mode(wifi_mode_t::WIFI_AP);
+    WiFi.mode(__WIFI_AP);
 
-    String chip_id = String(ESP.getEfuseMac() & 0xffff, HEX);
+    String chip_id = String(__ID, HEX);
     chip_id.toUpperCase();
 
     String ssid = String(WIFI_SSID) + "_" + chip_id;
@@ -70,7 +90,7 @@ void WifiManager::_connect_sta_step() {
     if (_state == WifiManagerState::DISCONNECTED) {
         D_PRINT("Connecting to Wi-Fi...");
 
-        WiFi.mode(wifi_mode_t::WIFI_MODE_STA);
+        WiFi.mode(__WIFI_STA);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
         _state = WifiManagerState::CONNECTING;

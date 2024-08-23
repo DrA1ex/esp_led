@@ -7,9 +7,9 @@
 class Application {
 public:
     Storage<Config> &config_storage;
-    NightModeManager &night_mode_manager;
 
     Config &config;
+    NightModeManager &night_mode_manager;
 
     unsigned long state_change_time = 0;
     AppState state = AppState::INITIALIZATION;

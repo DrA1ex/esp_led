@@ -109,7 +109,11 @@ void Storage<T>::_commit_impl() {
         return;
     }
 
+#ifdef ESP32
     file = _fs->open(_get_path(), "w", true);
+#else
+    file = _fs->open(_get_path(), "w");
+#endif
 
     file.write((uint8_t *) &_header, sizeof(_header));
     file.write((uint8_t *) &_version, sizeof(_version));

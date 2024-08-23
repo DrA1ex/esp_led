@@ -1,7 +1,10 @@
 #pragma once
 
+#include <Arduino.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
+
+#include "sys_constants.h"
 
 class NtpTime {
     WiFiUDP _wifi_udp;

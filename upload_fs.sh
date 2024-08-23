@@ -1,6 +1,7 @@
 #!/bin/bash
 
-OTA=${OTA=0}
+OTA=${OTA:0}
+PLATFORM=${PLATFORM=esp8266}
 
 set +v
 
@@ -14,11 +15,12 @@ echo "Compress..."
 gzip -9 ./data/*
 
 echo "Uploading..."
+echo "*** Platform: ${PLATFORM} ***"
 
 if (("$OTA" == 1)); then
   echo "*** OTA mode selected ***"
-  pio run -t uploadfs -e ota "$@"
+  pio run -t uploadfs -e ${PLATFORM}-ota "$@"
 else
   echo "*** WIRE mode selected ***"
-  pio run -t uploadfs "$@"
+  pio run -t uploadfs -e ${PLATFORM}-release "$@"
 fi

@@ -260,8 +260,19 @@ const sendChanges = FunctionUtils.throttle(async function (config, prop, value, 
         } else if (prop.type === "text") {
             await ws.request(prop.cmd, new TextEncoder().encode(value).buffer);
         } else {
-            const size = prop.size ?? 1;
             const kind = prop.kind ?? "Uint8";
+            const size = {
+                Uint8: 1, Int8: 1,
+                Uint16: 2, Int16: 2,
+                Uint32: 4, Int32: 4,
+                BigUint64: 8, BigInt64: 8,
+                Float32: 4,
+                Float64: 8,
+            }[kind];
+
+            if (typeof size === "undefined") {
+                throw new Error(`Unknown kind: "${kind}"`);
+            }
 
             const req = new Uint8Array(size);
             const view = new DataView(req.buffer);

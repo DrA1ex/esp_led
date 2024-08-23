@@ -1,0 +1,7 @@
+.pio
+.idea
+.DS_Store
+
+data/
+www/node_modules
+www/package-lock.json

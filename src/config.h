@@ -3,6 +3,7 @@
 #include <cstdint>
 
 enum class AppState {
+    UNINITIALIZED,
     INITIALIZATION,
     STAND_BY,
     TURNING_ON,

@@ -15,6 +15,8 @@
 #include "network/wifi.h"
 #include "network/server/ws.h"
 
+#include "utils/math.h"
+
 Timer global_timer;
 
 Storage<Config> config_storage(global_timer, "config", STORAGE_CONFIG_VERSION);
@@ -44,12 +46,10 @@ void setup() {
 
     config_storage.begin(&LittleFS);
 
-    analogWriteResolution(12);
+    analogWriteResolution(DAC_RESOLUTION);
 
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, PIN_DISABLED);
-
-    app.load();
 
     global_timer.add_interval(animation_loop, 1000 / 60);
     global_timer.add_interval(service_loop, 20);
@@ -70,13 +70,22 @@ void animation_loop(void *) {
 #endif
 
     switch (app.state) {
-        case AppState::INITIALIZATION:
+        case AppState::UNINITIALIZED:
+            break;
+
+        case AppState::INITIALIZATION: {
+            if (app.config.power) {
+                const auto factor = (millis() - app.state_change_time) * 2 % (DAC_MAX_VALUE + 1);
+                uint16_t brightness = app.brightness() * cubic_wave16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
+                app.set_brightness(brightness);
+            }
+        }
             break;
 
         case AppState::TURNING_ON: {
             uint16_t factor = std::min<unsigned long>(
                     DAC_MAX_VALUE, (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
-            uint16_t brightness = (uint16_t) app.brightness() * factor / DAC_MAX_VALUE;
+            uint16_t brightness = (uint16_t) app.brightness() * ease_cubic16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
             app.set_brightness(brightness);
 
             if (factor == DAC_MAX_VALUE) app.change_state(AppState::STAND_BY);
@@ -86,7 +95,7 @@ void animation_loop(void *) {
         case AppState::TURNING_OFF: {
             uint16_t factor = DAC_MAX_VALUE - std::min<unsigned long>(
                     DAC_MAX_VALUE, (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
-            uint16_t brightness = (uint16_t) app.brightness() * factor / DAC_MAX_VALUE;
+            uint16_t brightness = (uint16_t) app.brightness() * ease_cubic16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
             app.set_brightness(brightness);
 
             if (factor == 0) app.change_state(AppState::STAND_BY);
@@ -118,6 +127,7 @@ void service_loop(void *) {
             wifi_manager.connect(WIFI_MODE, WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL);
             state = ServiceState::WIFI_CONNECT;
 
+            app.change_state(AppState::INITIALIZATION);
             break;
 
         case ServiceState::WIFI_CONNECT:
@@ -195,6 +205,8 @@ void service_loop(void *) {
 
             ArduinoOTA.setHostname(MDNS_NAME);
             ArduinoOTA.begin();
+
+            app.load();
 
             app.change_state(AppState::STAND_BY);
             state = ServiceState::STAND_BY;

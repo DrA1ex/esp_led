@@ -2,6 +2,8 @@
 
 #include "misc/ntp_time.h"
 
+#include "utils/math.h"
+
 NightModeManager::NightModeManager(const Config &config) : _config(config) {}
 
 void NightModeManager::handle_night(const NtpTime &ntp_time) {
@@ -27,14 +29,10 @@ void NightModeManager::handle_night(const NtpTime &ntp_time) {
     }
 }
 
-uint16_t _smooth(uint16_t from, uint16_t to, float factor) {
-    return from - ((int32_t) from - to) * factor;
-}
-
 uint16_t NightModeManager::get_brightness() const {
     if (!is_night_time()) { return {}; }
 
-    const uint16_t brightness = _smooth(_config.brightness, _config.night_mode.brightness, _fade_factor);
+    const uint16_t brightness = smooth16(_config.brightness, _config.night_mode.brightness, _fade_factor);
 
     return brightness;
 }

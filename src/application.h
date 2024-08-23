@@ -12,8 +12,7 @@ public:
     NightModeManager &night_mode_manager;
 
     unsigned long state_change_time = 0;
-    AppState state = AppState::INITIALIZATION;
-
+    AppState state = AppState::UNINITIALIZED;
 
     explicit Application(Storage<Config> &config_storage, NightModeManager &night_mode_manager);
 

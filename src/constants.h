@@ -15,6 +15,6 @@
 #define LED_PIN                                 (1u)
 
 
-#define POWER_CHANGE_TIMEOUT                    (1000u)                 // Timeout for power change animation
+#define POWER_CHANGE_TIMEOUT                    (60000u)                // Timeout for power change animation
 
 #define TIME_ZONE                               (5.f)                   // GMT +5:00

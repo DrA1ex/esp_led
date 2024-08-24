@@ -13,6 +13,7 @@
 
 #include "network/web.h"
 #include "network/wifi.h"
+#include "network/server/api.h"
 #include "network/server/ws.h"
 
 #include "utils/math.h"
@@ -27,6 +28,7 @@ Application app(config_storage, night_mode_manager);
 WifiManager wifi_manager;
 WebServer web_server(WEB_PORT);
 
+ApiWebServer api_server(app);
 WebSocketServer ws_server(app);
 
 NtpTime ntp_time;
@@ -144,6 +146,7 @@ void service_loop(void *) {
             web_server.add_handler(new WebAuthHandler());
 #endif
 
+            api_server.begin(web_server);
             ws_server.begin(web_server);
 
             web_server.on("/debug", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -162,43 +165,6 @@ void service_loop(void *) {
                 ESP.restart();
             });
 
-
-            web_server.on("/api/power/status", HTTP_GET, [](AsyncWebServerRequest *request) {
-                auto brightness = app.config.brightness * 100 / DAC_MAX_VALUE;
-
-                String out;
-
-                out += "{";
-                out += "\"status\": \"ok\",";
-                out += "\"value\": " + String(app.config.power) + ",";
-                out += "\"brightness\": " + String(brightness);
-                out += "}";
-
-                request->send_P(200, "application/json", out.c_str());
-            });
-
-            web_server.on("/api/power", HTTP_GET, [](AsyncWebServerRequest *request) {
-                bool enabled = request->arg("value") == "1";
-                app.set_power(enabled);
-
-                request->send_P(200, "application/json", "{\"status\": \"ok\"}");
-            });
-
-            web_server.on("/api/brightness", HTTP_GET, [](AsyncWebServerRequest *request) {
-                if (!request->hasArg("value")) {
-                    auto value = app.config.brightness * 100 / DAC_MAX_VALUE;
-                    auto response = (String("{\"status\": \"ok\", \"value\": ") + String(value) + "}");
-
-                    return request->send_P(200, "application/json", response.c_str());
-                }
-
-                auto value = std::min(100, std::max(0, (int) request->arg("value").toInt()));
-
-                app.config.brightness = DAC_MAX_VALUE * value / 100;
-                app.load();
-
-                request->send_P(200, "application/json", "{\"status\": \"ok\"}");
-            });
 
             web_server.begin(&LittleFS);
             ntp_time.begin(TIME_ZONE);

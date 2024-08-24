@@ -21,5 +21,6 @@
 
 
 #define POWER_CHANGE_TIMEOUT                    (1000u)                // Timeout for power change animation
+#define WIFI_CONNECT_FLASH_TIMEOUT              (3000u)
 
 #define TIME_ZONE                               (5.f)                   // GMT +5:00

@@ -47,9 +47,9 @@ void Application::set_brightness(uint16_t value) {
 }
 
 uint16_t Application::brightness() const {
-    if (night_mode_manager.is_night_time()) {
-        return night_mode_manager.get_brightness();
-    } else {
-        return config.brightness;
-    }
+    uint16_t result = night_mode_manager.is_night_time()
+                      ? night_mode_manager.get_brightness() : config.brightness;
+
+
+    return std::min(DAC_MAX_VALUE, result);
 }

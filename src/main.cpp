@@ -77,7 +77,12 @@ void animation_loop(void *) {
 
         case AppState::INITIALIZATION: {
             if (app.config.power) {
-                const auto factor = (millis() - app.state_change_time) * 2 % (DAC_MAX_VALUE + 1);
+                const auto factor = map16(
+                        (millis() - app.state_change_time) % WIFI_CONNECT_FLASH_TIMEOUT,
+                        WIFI_CONNECT_FLASH_TIMEOUT,
+                        DAC_MAX_VALUE
+                );
+
                 uint16_t brightness = app.brightness() * cubic_wave16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
                 app.set_brightness(brightness);
             }

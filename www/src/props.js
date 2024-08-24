@@ -3,7 +3,7 @@ import {PacketType} from "./network/cmd.js";
 export const PropertyConfig = [{
     key: "general", section: "General", props: [
         {key: "power", title: "Power", type: "trigger", cmd: [PacketType.POWER_ON, PacketType.POWER_OFF]},
-        {key: "brightness", title: "Brightness", type: "wheel", limit: 4095, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
+        {key: "brightness", title: "Brightness", type: "wheel", min: 1, limit: 4095, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
     ],
 }, {
     key: "night_mode", section: "Night Mode", lock: true, props: [

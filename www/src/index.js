@@ -240,6 +240,9 @@ async function onConfigPropChanged(config, {key, value, oldValue}) {
         return;
     }
 
+    if (typeof prop.min !== "undefined" && value < prop.min) value = prop.min;
+    if (typeof prop.max !== "undefined" && value > prop.max) value = prop.max;
+
     if (value !== oldValue) {
         await sendChanges(config, prop, value, oldValue);
     }

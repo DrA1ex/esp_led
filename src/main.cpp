@@ -155,6 +155,15 @@ void service_loop(void *) {
 
 #ifdef MQTT
             mqtt_server.begin();
+
+            app.on_parameter_changed([](auto param) {
+                //TODO: throttle
+                if (param == NotificationParameter::BRIGHTNESS) {
+                    mqtt_server.notify_brightness(app.config.brightness);
+                } else if (param == NotificationParameter::POWER) {
+                    mqtt_server.notify_power(app.config.power);
+                }
+            });
 #endif
 
             api_server.begin(web_server);
@@ -200,17 +209,6 @@ void service_loop(void *) {
 
 #ifdef MQTT
             mqtt_server.handle_connection();
-
-            static auto _config = app.config;
-            if (_config.power != app.config.power) {
-                mqtt_server.notify_power(app.config.power);
-                _config = app.config;
-            }
-
-            if (_config.brightness != app.config.brightness) {
-                mqtt_server.notify_brightness(app.config.brightness);
-                _config = app.config;
-            }
 #endif
 
             break;

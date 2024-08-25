@@ -4,7 +4,16 @@
 #include "night_mode.h"
 #include "misc/storage.h"
 
+enum class NotificationParameter : uint8_t {
+    POWER,
+    BRIGHTNESS
+};
+
+typedef void( *ParameterChangedCallback)(NotificationParameter);
+
 class Application {
+    ParameterChangedCallback _parameter_changed_cb = nullptr;
+
 public:
     Storage<Config> &config_storage;
 
@@ -27,4 +36,8 @@ public:
     void set_brightness(uint16_t value);
 
     void restart();
+
+    inline void notify_parameter_changed(NotificationParameter param) { if (_parameter_changed_cb) _parameter_changed_cb(param); }
+
+    inline void on_parameter_changed(ParameterChangedCallback fn) { _parameter_changed_cb = fn; }
 };

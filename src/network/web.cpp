@@ -1,5 +1,7 @@
 #include "web.h"
 
+#include "credentials.h"
+
 class WebLogger : public AsyncWebHandler {
     bool canHandle(AsyncWebServerRequest *request) override {
         D_PRINTF("WebServer: %s -> %s %s\n", request->client()->remoteIP().toString().c_str(),
@@ -40,5 +42,5 @@ bool WebAuthHandler::canHandle(AsyncWebServerRequest *request) {
     bool is_local = (request->client()->getRemoteAddress() & PP_HTONL(0xffff0000UL)) == PP_HTONL(0xc0a80000UL);
     bool auth_required = _allow_local ? !is_local : true;
 
-    return auth_required && !request->authenticate(AUTH_USER, AUTH_PASSWORD);
+    return auth_required && !request->authenticate(WEBAUTH_USER, WEBAUTH_PASSWORD);
 }

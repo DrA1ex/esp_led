@@ -14,6 +14,7 @@
 #include "network/web.h"
 #include "network/wifi.h"
 #include "network/server/api.h"
+#include "network/server/mqtt.h"
 #include "network/server/ws.h"
 
 #include "utils/math.h"
@@ -29,6 +30,7 @@ WifiManager wifi_manager;
 WebServer web_server(WEB_PORT);
 
 ApiWebServer api_server(app);
+MqttServer mqtt_server(app);
 WebSocketServer ws_server(app);
 
 NtpTime ntp_time;
@@ -151,6 +153,10 @@ void service_loop(void *) {
             web_server.add_handler(new WebAuthHandler());
 #endif
 
+#ifdef MQTT
+            mqtt_server.begin();
+#endif
+
             api_server.begin(web_server);
             ws_server.begin(web_server);
 
@@ -191,6 +197,22 @@ void service_loop(void *) {
             wifi_manager.handle_connection();
 
             ws_server.handle_incoming_data();
+
+#ifdef MQTT
+            mqtt_server.handle_connection();
+
+            static auto _config = app.config;
+            if (_config.power != app.config.power) {
+                mqtt_server.notify_power(app.config.power);
+                _config = app.config;
+            }
+
+            if (_config.brightness != app.config.brightness) {
+                mqtt_server.notify_brightness(app.config.brightness);
+                _config = app.config;
+            }
+#endif
+
             break;
         }
 

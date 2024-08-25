@@ -1,5 +1,7 @@
 #include "wifi.h"
 
+#include "credentials.h"
+
 #ifdef ESP32
 
 #include <WiFi.h>

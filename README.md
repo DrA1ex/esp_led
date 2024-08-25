@@ -3,6 +3,14 @@ Smart LED Control for ESP32/ESP8266
 
 ![esp_led local_(iPhone XR)](https://github.com/user-attachments/assets/ed7e8e77-52eb-44dc-898a-b081195702f2)
 
+## Connection
+
+<img width="704" alt="image" src="https://github.com/user-attachments/assets/6d57e383-b652-46b2-81fa-6e31082bcb49">
+
+This is a basic connection scheme. You can use any pin for the connection (just change it in `constants.h`).
+
+I recommend connecting the MOSFET to the controller using a 200-ohm resistor to protect the controller pin. Additionally, connect the MOSFET's gate to GND with a 10k-ohm resistor to prevent unwanted activation from induced current.
+
 ## Installation
 
 - Install [Platform.IO](https://platformio.org/install):

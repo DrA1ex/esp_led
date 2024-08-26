@@ -37,7 +37,7 @@ public:
 
     void restart();
 
-    inline void notify_parameter_changed(PropertyChangedKind param) {
-        e_property_changed.publish(this, param);
+    inline void notify_parameter_changed(void *sender, PropertyChangedKind param, void *arg = nullptr) {
+        e_property_changed.publish(sender, param, arg);
     }
 };

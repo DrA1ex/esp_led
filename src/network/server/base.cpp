@@ -5,18 +5,19 @@
 ServerBase::ServerBase(Application &app) : _app(app), _protocol() {}
 
 
-Response ServerBase::handle_packet_data(const uint8_t *buffer, uint16_t length) {
+Response ServerBase::handle_packet_data(uint32_t client_id, const uint8_t *buffer, uint16_t length) {
     const auto parseResponse = _protocol.parse_packet(buffer, length);
     if (!parseResponse.success) return parseResponse.response;
 
     const auto [header, data] = parseResponse.packet;
 
+    Response response;
     if (header->type == PacketType::GET_CONFIG) {
-        return _protocol.serialize(app().config);
+        response = _protocol.serialize(app().config);
     } else if (header->type < PacketType::BRIGHTNESS) {
-        return _handle_command(header, data);
+        response = _handle_command(header, data);
     } else {
-        auto response = _handle_parameter_update(header, data);
+        response = _handle_parameter_update(header, data);
         if (response.is_ok()) {
             if (header->type >= PacketType::NIGHT_MODE_ENABLED && header->type <= PacketType::NIGHT_MODE_BRIGHTNESS) {
                 app().night_mode_manager.reset();
@@ -24,23 +25,34 @@ Response ServerBase::handle_packet_data(const uint8_t *buffer, uint16_t length) 
 
             app().update();
         }
-
-        return response;
     }
+
+    if (response.is_ok()) {
+        switch (header->type) {
+            case PacketType::POWER_ON:
+            case PacketType::POWER_OFF:
+                app().notify_parameter_changed(this, PropertyChangedKind::POWER, &client_id);
+                break;
+
+            case PacketType::BRIGHTNESS:
+                app().notify_parameter_changed(this, PropertyChangedKind::BRIGHTNESS, &client_id);
+                break;
+
+            default:;
+        }
+    }
+
+    return response;
 }
 
 Response ServerBase::_handle_command(PacketHeader *header, const void *) {
     switch (header->type) {
         case PacketType::POWER_ON:
             app().set_power(true);
-            app().notify_parameter_changed(PropertyChangedKind::POWER);
-
             return Response::ok();
 
         case PacketType::POWER_OFF:
             app().set_power(false);
-            app().notify_parameter_changed(PropertyChangedKind::POWER);
-
             return Response::ok();
 
         default:
@@ -50,11 +62,8 @@ Response ServerBase::_handle_command(PacketHeader *header, const void *) {
 
 Response ServerBase::_handle_parameter_update(PacketHeader *header, const void *data) {
     switch (header->type) {
-        case PacketType::BRIGHTNESS: {
-            auto result = _protocol.update_parameter_value(&app().config.brightness, *header, data);
-            if (result.is_ok()) app().notify_parameter_changed(PropertyChangedKind::BRIGHTNESS);
-            return result;
-        }
+        case PacketType::BRIGHTNESS:
+            return _protocol.update_parameter_value(&app().config.brightness, *header, data);
 
         case PacketType::NIGHT_MODE_ENABLED:
             return _protocol.update_parameter_value(&app().config.night_mode.enabled, *header, data);

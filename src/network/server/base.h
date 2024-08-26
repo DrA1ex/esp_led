@@ -20,7 +20,7 @@ public:
 protected:
     inline Application &app() { return _app; }
 
-    Response handle_packet_data(const uint8_t *buffer, uint16_t length);
+    Response handle_packet_data(uint32_t client_id, const uint8_t *buffer, uint16_t length);
 
 private:
     Response _handle_command(PacketHeader *header, const void *data);

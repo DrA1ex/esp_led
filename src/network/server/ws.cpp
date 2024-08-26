@@ -1,5 +1,8 @@
 #include "ws.h"
 
+#include <functional>
+
+#include "application.h"
 #include "debug.h"
 
 
@@ -7,13 +10,22 @@ WebSocketServer::WebSocketServer(Application &app, const char *path) : ServerBas
 
 
 void WebSocketServer::begin(WebServer &server) {
-    auto event_handler =
-            [this](auto _1, auto _2, auto _3, auto _4, auto _5, auto _6) {
-                on_event(_1, _2, _3, _4, _5, _6);
-            };
+    using namespace std::placeholders;
+    auto event_handler = std::bind(&WebSocketServer::on_event, this, _1, _2, _3, _4, _5, _6);
 
     _ws.onEvent(event_handler);
     server.add_handler(&_ws);
+
+    app().e_property_changed.subscribe(this, [this](auto, auto type, auto arg) {
+        auto client_id = arg ? *(uint32_t *) arg : 0;
+        switch (type) {
+            case PropertyChangedKind::BRIGHTNESS:
+                return notify_clients(client_id, PacketType::BRIGHTNESS, app().config.brightness);
+
+            case PropertyChangedKind::POWER:
+                return notify_clients(client_id, app().config.power ? PacketType::POWER_ON : PacketType::POWER_OFF);
+        }
+    });
 
     D_WRITE("WebSocket server listening on path: ");
     D_PRINT(_path);
@@ -25,7 +37,7 @@ void WebSocketServer::handle_incoming_data() {
     while (_request_queue.can_pop()) {
         auto &request = *_request_queue.pop();
 
-        auto response = handle_packet_data(request.data, request.size);
+        auto response = handle_packet_data(request.client_id, request.data, request.size);
         switch (response.type) {
             case ResponseType::CODE:
                 _ws.text(request.client_id, response.code_string());
@@ -90,4 +102,30 @@ void WebSocketServer::on_event(AsyncWebSocket *server,
         default:
             break;
     }
+}
+
+void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type) {
+    notify_clients(sender_id, type, nullptr, 0);
+}
+
+void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const void *data, uint8_t size) {
+    uint8_t message[sizeof(PacketHeader) + size];
+
+    (*(PacketHeader *) message) = PacketHeader{PACKET_SIGNATURE, type, size};
+    mempcpy(message + sizeof(PacketHeader), data, size);
+
+    D_PRINTF("Send message total size: %u (data size: %u)\n", sizeof(message), size);
+
+    for (auto &client: _ws.getClients()) {
+        if (sender_id == client->id()) continue;
+
+        _ws.binary(client->id(), message, sizeof(message));
+    }
+}
+
+template<typename T>
+void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const T &value) {
+    D_PRINTF("Send value message size: %u\n", sizeof(value));
+
+    notify_clients(sender_id, type, &value, sizeof(value));
 }

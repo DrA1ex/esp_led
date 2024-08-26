@@ -28,4 +28,10 @@ public:
 
 protected:
     void on_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+
+    void notify_clients(uint32_t sender_id, PacketType type);
+    void notify_clients(uint32_t sender_id, PacketType type, const void *data, uint8_t size);
+
+    template<typename T>
+    void notify_clients(uint32_t sender_id, PacketType type, const T &value);
 };

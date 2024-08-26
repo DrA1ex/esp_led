@@ -1,26 +1,24 @@
 #pragma once
 
-#include <functional>
-
 #include "config.h"
 #include "night_mode.h"
+
+#include "misc/event_topic.h"
 #include "misc/storage.h"
 
-enum class NotificationParameter : uint8_t {
+enum class PropertyChangedKind : uint8_t {
     POWER,
     BRIGHTNESS
 };
 
-typedef std::function<void(NotificationParameter)> ParameterChangedCallback;
-
 class Application {
-    ParameterChangedCallback _parameter_changed_cb = nullptr;
-
 public:
     Storage<Config> &config_storage;
 
     Config &config;
     NightModeManager &night_mode_manager;
+
+    EventTopic<PropertyChangedKind> e_property_changed{};
 
     unsigned long state_change_time = 0;
     AppState state = AppState::UNINITIALIZED;
@@ -39,7 +37,7 @@ public:
 
     void restart();
 
-    inline void notify_parameter_changed(NotificationParameter param) { if (_parameter_changed_cb) _parameter_changed_cb(param); }
-
-    inline void on_parameter_changed(ParameterChangedCallback fn) { _parameter_changed_cb = fn; }
+    inline void notify_parameter_changed(PropertyChangedKind param) {
+        e_property_changed.publish(this, param);
+    }
 };

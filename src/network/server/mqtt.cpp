@@ -19,7 +19,11 @@ void MqttServer::begin() {
     _mqttClient.setServer(MQTT_HOST, MQTT_PORT);
     _mqttClient.setCredentials(MQTT_USER, MQTT_PASSWORD);
 
-    _app.on_parameter_changed(std::bind(&MqttServer::_on_property_changed, this, _1));
+    _app.e_property_changed.subscribe(this, PropertyChangedKind::POWER,
+                                      [this](auto, auto, auto) { notify_power(_app.config.power); });
+
+    _app.e_property_changed.subscribe(this, PropertyChangedKind::BRIGHTNESS,
+                                      [this](auto, auto, auto) { notify_brightness(_app.config.brightness); });
 
     _connect();
 }
@@ -132,16 +136,4 @@ void MqttServer::_publish(const char *topic, uint8_t qos, const char *payload, s
     _mqttClient.publish(topic, qos, true, payload, length);
 
     D_PRINTF("MQTT Publish: %s: \"%.*s\"\n", topic, length, payload);
-}
-
-void MqttServer::_on_property_changed(NotificationParameter param) {
-    //TODO: throttle
-
-    switch (param) {
-        case NotificationParameter::BRIGHTNESS:
-            return notify_brightness(_app.config.brightness);
-
-        case NotificationParameter::POWER:
-            return notify_power(_app.config.power);
-    }
 }

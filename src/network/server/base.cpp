@@ -33,13 +33,13 @@ Response ServerBase::_handle_command(PacketHeader *header, const void *) {
     switch (header->type) {
         case PacketType::POWER_ON:
             app().set_power(true);
-            app().notify_parameter_changed(NotificationParameter::POWER);
+            app().notify_parameter_changed(PropertyChangedKind::POWER);
 
             return Response::ok();
 
         case PacketType::POWER_OFF:
             app().set_power(false);
-            app().notify_parameter_changed(NotificationParameter::POWER);
+            app().notify_parameter_changed(PropertyChangedKind::POWER);
 
             return Response::ok();
 
@@ -52,7 +52,7 @@ Response ServerBase::_handle_parameter_update(PacketHeader *header, const void *
     switch (header->type) {
         case PacketType::BRIGHTNESS: {
             auto result = _protocol.update_parameter_value(&app().config.brightness, *header, data);
-            if (result.is_ok()) app().notify_parameter_changed(NotificationParameter::BRIGHTNESS);
+            if (result.is_ok()) app().notify_parameter_changed(PropertyChangedKind::BRIGHTNESS);
             return result;
         }
 

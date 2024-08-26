@@ -7,9 +7,10 @@
 #include "debug.h"
 #include "night_mode.h"
 
+#include "misc/event_topic.h"
+#include "misc/ntp_time.h"
 #include "misc/storage.h"
 #include "misc/timer.h"
-#include "misc/ntp_time.h"
 
 #include "network/web.h"
 #include "network/wifi.h"

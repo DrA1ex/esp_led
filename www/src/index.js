@@ -66,31 +66,30 @@ ws.subscribe(this, WebSocketInteraction.DISCONNECTED, () => {
 });
 
 ws.subscribe(this, WebSocketInteraction.NOTIFICATION, (_, packet) => {
-    switch (packet.type) {
-        case PacketType.POWER_ON:
-            window.__app.Config.power = true;
-            return window.__app.Properties.power.control.setValue(true);
+    const property = Object.values(window.__app.Properties)
+        .find(p => p.prop.cmd instanceof Array ? p.prop.cmd.includes(packet.type) : p.prop.cmd === packet.type);
 
-        case PacketType.POWER_OFF:
-            window.__app.Config.power = false;
-            return window.__app.Properties.power.control.setValue(false);
+    if (!property) return console.error("Received notification for unknown property", packet.type);
 
-        case PacketType.BRIGHTNESS:
-            window.__app.Config.brightness = packet.parser().readUInt16();
-            return window.__app.Properties.brightness.control.setValue(window.__app.Config.brightness);
+    if (property.prop.cmd instanceof Array) {
+        window.__app.Config[property.prop.key] = property.prop.cmd[0] === packet.type;
+    } else {
+        window.__app.Config[property.prop.key] = packet.parser()[`read${property.prop.kind}`]();
     }
+
+    property.control.setValue(window.__app.Config[property.prop.key]);
 });
 
 async function request_fx(cmd) {
     const {data} = await ws.request(cmd);
     const parser = new BinaryParser(data.buffer, data.byteOffset);
 
-    const count = parser.readUInt8();
+    const count = parser.readUint8();
 
     const result = new Array(count);
     for (let i = 0; i < count; i++) {
         result[i] = {
-            code: parser.readUInt8(),
+            code: parser.readUint8(),
             name: parser.readNullTerminatedString()
         }
     }

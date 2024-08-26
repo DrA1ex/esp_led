@@ -12,10 +12,10 @@ export class Packet {
 
         const packet = new Packet();
 
-        packet.signature = parser.readUInt16();
-        packet.requestId = parser.readUInt16();
-        packet.type = parser.readUInt8();
-        packet.size = parser.readUInt8();
+        packet.signature = parser.readUint16();
+        packet.requestId = parser.readUint16();
+        packet.type = parser.readUint8();
+        packet.size = parser.readUint8();
         packet.data = new Uint8Array(buffer, parser.position);
 
         return packet;

@@ -25,15 +25,15 @@ export class Config extends EventEmitter {
         const parser = new BinaryParser(data.buffer, data.byteOffset);
 
         this.power = parser.readBoolean();
-        this.brightness = parser.readUInt16();
+        this.brightness = parser.readUint16();
 
         this.nightMode = {
             enabled: parser.readBoolean(),
-            brightness: parser.readUInt16(),
+            brightness: parser.readUint16(),
 
-            startTime: parser.readUInt32(),
-            endTime: parser.readUInt32(),
-            switchInterval: parser.readUInt16(),
+            startTime: parser.readUint32(),
+            endTime: parser.readUint32(),
+            switchInterval: parser.readUint16(),
         };
 
         this.emitEvent(Config.LOADED);

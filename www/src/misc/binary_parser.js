@@ -76,14 +76,14 @@ export class BinaryParser {
      * @returns {boolean} - The parsed boolean value
      */
     readBoolean() {
-        return this.readUInt8() === 1;
+        return this.readUint8() === 1;
     }
 
     /**
      * Read an unsigned 8-bit integer from the buffer
      * @returns {number} - The parsed 8-bit unsigned integer value
      */
-    readUInt8() {
+    readUint8() {
         return this.#read(DataView.prototype.getUint8, 1);
     }
 
@@ -99,7 +99,7 @@ export class BinaryParser {
      * Read an unsigned 16-bit integer from the buffer
      * @returns {number} - The parsed 16-bit unsigned integer value
      */
-    readUInt16(littleEndian = true) {
+    readUint16(littleEndian = true) {
         return this.#read(DataView.prototype.getUint16, 2, littleEndian);
     }
 
@@ -117,7 +117,7 @@ export class BinaryParser {
      * @param {boolean} [littleEndian=true] - Specify byte order (little or big endian)
      * @returns {number} - The parsed 32-bit unsigned integer value
      */
-    readUInt32(littleEndian = true) {
+    readUint32(littleEndian = true) {
         return this.#read(DataView.prototype.getUint32, 4, littleEndian);
     }
 

@@ -190,7 +190,7 @@ export class WebSocketInteraction extends EventEmitter {
             if (packet.requestId === 0) {
                 console.log("Received notification of type", packet.type);
 
-                return this.emitEvent(WebSocket.NOTIFICATION, packet);
+                return this.emitEvent(WebSocketInteraction.NOTIFICATION, packet);
             } else if (!(packet.requestId in this.#requestMap)) {
                 return console.error(`Websocket unknown requestId: ${packet.requestId}`, packet);
             }

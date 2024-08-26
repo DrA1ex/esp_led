@@ -15,6 +15,7 @@ import {BinaryParser} from "./misc/binary_parser.js";
 import {WebSocketInteraction} from "./network/ws.js";
 
 import * as FunctionUtils from "./utils/function.js"
+import {PacketType} from "./network/cmd.js";
 
 if ("serviceWorker" in navigator) {
     try {
@@ -62,6 +63,22 @@ ws.subscribe(this, WebSocketInteraction.CONNECTED, async () => {
 ws.subscribe(this, WebSocketInteraction.DISCONNECTED, () => {
     StatusElement.innerText = "NOT CONNECTED";
     StatusElement.style.visibility = "visible";
+});
+
+ws.subscribe(this, WebSocketInteraction.NOTIFICATION, (_, packet) => {
+    switch (packet.type) {
+        case PacketType.POWER_ON:
+            window.__app.Config.power = true;
+            return window.__app.Properties.power.control.setValue(true);
+
+        case PacketType.POWER_OFF:
+            window.__app.Config.power = false;
+            return window.__app.Properties.power.control.setValue(false);
+
+        case PacketType.BRIGHTNESS:
+            window.__app.Config.brightness = packet.parser().readUInt16();
+            return window.__app.Properties.brightness.control.setValue(window.__app.Config.brightness);
+    }
 });
 
 async function request_fx(cmd) {
@@ -282,15 +299,6 @@ const sendChanges = FunctionUtils.throttle(async function (config, prop, value, 
             view[`set${kind}`](0, value, true);
 
             await ws.request(prop.cmd, req.buffer);
-        }
-
-        if (prop.key === "preset.name") {
-            window.__app.Properties["presetId"].control.updateOption(config.presetId, value);
-        }
-
-        if (prop.key === "presetId") {
-            await config.preset.loadPresetConfig();
-            refreshConfig();
         }
 
         console.log(

@@ -21,8 +21,11 @@ export class Packet {
         return packet;
     }
 
+    parser() {
+        return new BinaryParser(this.data.buffer, this.data.byteOffset);
+    }
+
     parseString() {
-        const parser = new BinaryParser(this.data.buffer, this.data.byteOffset);
-        return parser.readString(this.data.size);
+        return this.parser().readString(this.data.size);
     }
 }

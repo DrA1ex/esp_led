@@ -32,4 +32,20 @@ void ApiWebServer::begin(WebServer &server) {
 
         response_with_json_status(request, "ok");
     });
+
+    server.on("/api/debug", HTTP_GET, [](AsyncWebServerRequest *request) {
+        char result[64] = {};
+
+        snprintf(result, sizeof(result), "General:\nHeap: %u\nNow: %lu\n",
+                 ESP.getFreeHeap(), millis());
+
+        request->send_P(200, "text/plain", result);
+    });
+
+    server.on("/api/restart", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        request->send_P(200, "text/plain", "OK");
+
+        if (_app.config_storage.is_pending_commit()) _app.config_storage.force_save();
+        ESP.restart();
+    });
 }

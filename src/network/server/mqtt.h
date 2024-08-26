@@ -38,6 +38,8 @@ protected:
 
     void _change_state(MqttServerState state);
     void _connect();
+
+    void _on_property_changed(NotificationParameter param);
 };
 
 

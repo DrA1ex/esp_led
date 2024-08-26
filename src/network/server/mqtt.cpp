@@ -19,6 +19,8 @@ void MqttServer::begin() {
     _mqttClient.setServer(MQTT_HOST, MQTT_PORT);
     _mqttClient.setCredentials(MQTT_USER, MQTT_PASSWORD);
 
+    _app.on_parameter_changed(std::bind(&MqttServer::_on_property_changed, this, _1));
+
     _connect();
 }
 
@@ -75,24 +77,41 @@ void MqttServer::_on_message(char *topic, char *payload, AsyncMqttClientMessageP
     payload_str.concat(payload, len);
 
     if (topic_str == MQTT_TOPIC_BRIGHTNESS) {
-        auto value = map16(payload_str.toInt(), 100, DAC_MAX_VALUE);
+        uint16_t value;
+
+        if constexpr (MQTT_CONVERT_BRIGHTNESS) {
+            value = map16(payload_str.toInt(), 100, DAC_MAX_VALUE);
+        } else {
+            value = payload_str.toInt();
+        }
+
         D_PRINTF("Set brightness %u\n", value);
 
         _app.config.brightness = value;
         _app.load();
+
+        notify_brightness(_app.config.brightness);
     } else if (topic_str == MQTT_TOPIC_POWER) {
         bool value = payload_str == "1";
         D_PRINTF("Set power %u\n", value);
 
         _app.set_power(value);
+
+        notify_power(value);
     }
 }
 
 void MqttServer::notify_brightness(uint16_t value) {
-    auto converted = map16(value, DAC_MAX_VALUE, 100);
-    auto converted_str = String(converted);
+    String value_str;
 
-    _publish(MQTT_OUT_TOPIC_BRIGHTNESS, 1, converted_str.c_str(), converted_str.length());
+    if constexpr (MQTT_CONVERT_BRIGHTNESS) {
+        auto converted = map16(value, DAC_MAX_VALUE, 100);
+        value_str = String(converted);
+    } else {
+        value_str = String(value);
+    }
+
+    _publish(MQTT_OUT_TOPIC_BRIGHTNESS, 1, value_str.c_str(), value_str.length());
 }
 
 void MqttServer::notify_power(bool value) {
@@ -113,4 +132,16 @@ void MqttServer::_publish(const char *topic, uint8_t qos, const char *payload, s
     _mqttClient.publish(topic, qos, true, payload, length);
 
     D_PRINTF("MQTT Publish: %s: \"%.*s\"\n", topic, length, payload);
+}
+
+void MqttServer::_on_property_changed(NotificationParameter param) {
+    //TODO: throttle
+
+    switch (param) {
+        case NotificationParameter::BRIGHTNESS:
+            return notify_brightness(_app.config.brightness);
+
+        case NotificationParameter::POWER:
+            return notify_power(_app.config.power);
+    }
 }

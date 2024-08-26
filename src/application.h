@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "config.h"
 #include "night_mode.h"
 #include "misc/storage.h"
@@ -9,7 +11,7 @@ enum class NotificationParameter : uint8_t {
     BRIGHTNESS
 };
 
-typedef void( *ParameterChangedCallback)(NotificationParameter);
+typedef std::function<void(NotificationParameter)> ParameterChangedCallback;
 
 class Application {
     ParameterChangedCallback _parameter_changed_cb = nullptr;

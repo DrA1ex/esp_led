@@ -4,7 +4,7 @@
 
 #define WIFI_MODE                               (WIFI_AP_MODE)
 
-#define WEB_AUTH                                                        // Use basic auth for non-local connections
+#define WEB_AUTH                                (1)                     // Use basic auth for non-local connections
 
 #define WIFI_CONNECTION_CHECK_INTERVAL          (5000u)                 // Interval (ms) between Wi-Fi connection check
 #define WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL    (0u)                    // Max time (ms) to wait for Wi-Fi connection before switch to AP mode
@@ -21,10 +21,12 @@
 #define TIME_ZONE                               (5.f)                   // GMT +5:00
 
 
-//#define MQTT                                                          // Enable MQTT server
+#define MQTT                                    (0)                     // Enable MQTT server
 
 #define MQTT_CONNECTION_TIMEOUT                 (15000u)                // Connection attempt timeout to MQTT server
 #define MQTT_RECONNECT_TIMEOUT                  (5000u)                 // Time before new reconnection attempt to MQTT server
+
+#define MQTT_CONVERT_BRIGHTNESS                 (0u)                    // Convert brightness from internal range to [0..100]
 
 #define MQTT_PREFIX                             MDNS_NAME
 #define MQTT_TOPIC_BRIGHTNESS                   MQTT_PREFIX "/brightness"

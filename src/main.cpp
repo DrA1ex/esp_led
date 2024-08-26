@@ -149,42 +149,12 @@ void service_loop(void *) {
             break;
 
         case ServiceState::INITIALIZATION:
-#ifdef WEB_AUTH
-            web_server.add_handler(new WebAuthHandler());
-#endif
+            if constexpr (WEB_AUTH) web_server.add_handler(new WebAuthHandler());
 
-#ifdef MQTT
-            mqtt_server.begin();
-
-            app.on_parameter_changed([](auto param) {
-                //TODO: throttle
-                if (param == NotificationParameter::BRIGHTNESS) {
-                    mqtt_server.notify_brightness(app.config.brightness);
-                } else if (param == NotificationParameter::POWER) {
-                    mqtt_server.notify_power(app.config.power);
-                }
-            });
-#endif
+            if constexpr (MQTT) mqtt_server.begin();
 
             api_server.begin(web_server);
             ws_server.begin(web_server);
-
-            web_server.on("/debug", HTTP_GET, [](AsyncWebServerRequest *request) {
-                char result[64] = {};
-
-                snprintf(result, sizeof(result), "General:\nHeap: %u\nNow: %lu\n",
-                         ESP.getFreeHeap(), millis());
-
-                request->send_P(200, "text/plain", result);
-            });
-
-            web_server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
-                request->send_P(200, "text/plain", "OK");
-
-                if (config_storage.is_pending_commit()) config_storage.force_save();
-                ESP.restart();
-            });
-
 
             web_server.begin(&LittleFS);
             ntp_time.begin(TIME_ZONE);
@@ -207,9 +177,7 @@ void service_loop(void *) {
 
             ws_server.handle_incoming_data();
 
-#ifdef MQTT
-            mqtt_server.handle_connection();
-#endif
+            if constexpr (MQTT) mqtt_server.handle_connection();
 
             break;
         }

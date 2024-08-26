@@ -20,17 +20,17 @@ PacketParsingResponse BinaryProtocol::parse_packet(const uint8_t *buffer, uint8_
     if (packet->signature != PACKET_SIGNATURE) {
         D_PRINTF("Wrong packet signature: %X\n", packet->signature);
 
-        return PacketParsingResponse::fail(Response::code(ResponseCode::BAD_REQUEST));
+        return PacketParsingResponse::fail(Response::code(ResponseCode::BAD_REQUEST), packet->request_id);
     }
 
     if (header_size + packet->size != length) {
         D_PRINTF("Wrong message length, expected: %u\n", header_size + packet->size);
 
-        return PacketParsingResponse::fail(Response::code(ResponseCode::BAD_REQUEST));
+        return PacketParsingResponse::fail(Response::code(ResponseCode::BAD_REQUEST), packet->request_id);
     }
 
     const void *data = buffer + header_size;
-    return PacketParsingResponse::ok({packet, data});
+    return PacketParsingResponse::ok({packet, data}, packet->request_id);
 }
 
 Response BinaryProtocol::update_string_value(char *str, uint8_t max_size, const PacketHeader &header, const void *data) {

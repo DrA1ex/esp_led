@@ -1,4 +1,5 @@
 import {PacketType} from "./cmd.js";
+import {Packet} from "./packet.js";
 import {EventEmitter} from "../misc/event_emitter.js";
 
 import {
@@ -20,13 +21,22 @@ const WebSocketState = {
     connected: "connected"
 }
 
+const MAX_REQUEST_ID = 2 ** 16 - 1;
+
 export class WebSocketInteraction extends EventEmitter {
     static CONNECTED = "ws_interaction_connected";
     static DISCONNECTED = "ws_interaction_disconnected";
     static ERROR = "ws_interaction_error";
     static MESSAGE = "ws_interaction_message";
+    static NOTIFICATION = "ws_interaction_notification";
 
     #id = 0;
+    #request_id = 1; // 0 - Reserved for notifications
+
+    #getRequestId() {
+        if (this.#request_id >= MAX_REQUEST_ID) this.#request_id = 1;
+        return this.#request_id++;
+    }
 
     #state = WebSocketState.uninitialized;
     #ws = null;
@@ -34,7 +44,7 @@ export class WebSocketInteraction extends EventEmitter {
     #reconnectionTimeout = 0;
     #reconnectionTimerId = null;
 
-    #requestQueue = [];
+    #requestMap = {};
 
     gateway;
     requestTimeout;
@@ -82,12 +92,15 @@ export class WebSocketInteraction extends EventEmitter {
             throw new Error("Not connected");
         }
 
+        const requestId = this.#getRequestId();
+        const requestIdBytes = new Uint8Array(Uint16Array.of(requestId).buffer);
+
         if (buffer) {
             if (buffer.byteLength > 255) throw new Error("Request payload too long!");
 
-            this.#ws.send(Uint8Array.of(...REQUEST_SIGNATURE, cmd, buffer.byteLength, ...new Uint8Array(buffer)));
+            this.#ws.send(Uint8Array.of(...REQUEST_SIGNATURE, ...requestIdBytes, cmd, buffer.byteLength, ...new Uint8Array(buffer)));
         } else {
-            this.#ws.send(Uint8Array.of(...REQUEST_SIGNATURE, cmd, 0x00));
+            this.#ws.send(Uint8Array.of(...REQUEST_SIGNATURE, ...requestIdBytes, cmd, 0x00));
         }
 
         return new Promise((resolve, reject) => {
@@ -111,7 +124,9 @@ export class WebSocketInteraction extends EventEmitter {
                 reject(new Error("Request aborted"));
             }
 
-            this.#requestQueue.push({resolve: _ok, reject: _fail, abort: _abort});
+            this.#requestMap[requestId] = {
+                resolve: _ok, reject: _fail, abort: _abort
+            };
         });
     }
 
@@ -151,24 +166,52 @@ export class WebSocketInteraction extends EventEmitter {
     }
 
     async #onMessage(e) {
-        if (this.#requestQueue.length === 0 || !this.connected) {
+        if (!this.connected) {
             console.error(`#${this.#ws.__id}: WebSocket unexpected message`, e);
             return;
         }
 
         this.emitEvent(WebSocketInteraction.MESSAGE, e);
 
-        const request = this.#requestQueue.shift();
-
         if (e.data instanceof Blob) {
             const buffer = await e.data.arrayBuffer()
-            request.resolve(buffer);
-        } else if (typeof e.data === "string") {
-            if (e.data === "OK") request.resolve(e.data);
-            else request.reject(new Error(`Bad response: ${e.data}`));
+            this.#processMessage(buffer);
         } else {
-            request.resolve(e.data);
+            console.log("WebSocket unsupported message type", e)
         }
+    }
+
+    #processMessage(buffer) {
+        let packet;
+
+        try {
+            packet = Packet.parse(buffer);
+
+            if (packet.requestId === 0) {
+                console.log("Received notification of type", packet.type);
+
+                return this.emitEvent(WebSocket.NOTIFICATION, packet);
+            } else if (!(packet.requestId in this.#requestMap)) {
+                return console.error(`Websocket unknown requestId: ${packet.requestId}`, packet);
+            }
+        } catch (e) {
+            console.error("Websocket unable to parse message", e);
+            return;
+        }
+
+        const request = this.#requestMap[packet.requestId];
+
+        try {
+            if (packet.type === PacketType.RESPONSE_STRING) {
+                const str = packet.parseString();
+                if (str !== "OK") return request.reject(str);
+            }
+        } catch (e) {
+            console.error("Unable to read packet data", e);
+            return request.reject(e);
+        }
+
+        request.resolve(packet);
     }
 
     #closeConnection(reconnect = true) {
@@ -186,12 +229,13 @@ export class WebSocketInteraction extends EventEmitter {
     }
 
     #cleanUpSocket() {
-        if (this.#requestQueue.length) {
-            for (const entry of this.#requestQueue) {
+        const activeRequests = Object.values(this.#requestMap);
+        if (activeRequests.length) {
+            for (const entry of activeRequests) {
                 entry.abort();
             }
 
-            this.#requestQueue = [];
+            this.#requestMap = {};
         }
 
         if (!this.#ws) return;

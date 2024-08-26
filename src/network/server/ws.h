@@ -34,4 +34,7 @@ protected:
 
     template<typename T>
     void notify_clients(uint32_t sender_id, PacketType type, const T &value);
+
+private:
+    void _send_response(uint32_t client_id, uint16_t request_id, const Response &response);
 };

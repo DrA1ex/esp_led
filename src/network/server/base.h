@@ -20,6 +20,9 @@ public:
 protected:
     inline Application &app() { return _app; }
 
+    PacketParsingResponse parse_packet(const uint8_t *buffer, uint16_t length);
+
+    Response handle_packet_data(uint32_t client_id, const Packet& packet);
     Response handle_packet_data(uint32_t client_id, const uint8_t *buffer, uint16_t length);
 
 private:

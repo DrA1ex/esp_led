@@ -21,8 +21,8 @@ export class Config extends EventEmitter {
     }
 
     async load() {
-        const buffer = await this.#ws.request(PacketType.GET_CONFIG);
-        const parser = new BinaryParser(buffer);
+        const {data} = await this.#ws.request(PacketType.GET_CONFIG);
+        const parser = new BinaryParser(data.buffer, data.byteOffset);
 
         this.power = parser.readBoolean();
         this.brightness = parser.readUInt16();

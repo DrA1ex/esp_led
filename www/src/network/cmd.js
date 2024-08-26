@@ -13,5 +13,8 @@ export const PacketType = {
     NIGHT_MODE_INTERVAL: 0x23,
     NIGHT_MODE_BRIGHTNESS: 0x24,
 
-    GET_CONFIG: 0xa0
+    GET_CONFIG: 0xa0,
+
+    RESPONSE_STRING: 0xf0,
+    RESPONSE_BINARY: 0xf1,
 };

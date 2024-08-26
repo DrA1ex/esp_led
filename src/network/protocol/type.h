@@ -73,6 +73,7 @@ struct Response {
 
 struct __attribute__ ((packed))  PacketHeader {
     uint16_t signature;
+    uint16_t request_id;
     PacketType type;
     uint8_t size;
 };
@@ -84,17 +85,18 @@ struct Packet {
 
 struct PacketParsingResponse {
     bool success;
+    uint16_t request_id;
 
     union {
         Packet packet;
         Response response;
     };
 
-    static PacketParsingResponse ok(Packet &&packet) {
-        return PacketParsingResponse{.success = true, .packet = packet};
+    static PacketParsingResponse ok(Packet &&packet, uint16_t request_id = 0) {
+        return PacketParsingResponse{.success = true, .request_id = request_id, .packet = packet};
     }
 
-    static PacketParsingResponse fail(Response &&response) {
-        return PacketParsingResponse{.success = false, .response = response};
+    static PacketParsingResponse fail(Response &&response, uint16_t request_id = 0) {
+        return PacketParsingResponse{.success = false, .request_id = request_id, .response = response};
     }
 };

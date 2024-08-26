@@ -4,6 +4,8 @@ export class BinaryParser {
 
     #dataView;
 
+    get position() {return this.#byteOffset;}
+
     /**
      * Construct a BinaryParser instance
      *

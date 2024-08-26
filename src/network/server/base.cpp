@@ -4,12 +4,19 @@
 
 ServerBase::ServerBase(Application &app) : _app(app), _protocol() {}
 
+PacketParsingResponse ServerBase::parse_packet(const uint8_t *buffer, uint16_t length) {
+    return _protocol.parse_packet(buffer, length);
+}
 
 Response ServerBase::handle_packet_data(uint32_t client_id, const uint8_t *buffer, uint16_t length) {
-    const auto parseResponse = _protocol.parse_packet(buffer, length);
+    const auto parseResponse = parse_packet(buffer, length);
     if (!parseResponse.success) return parseResponse.response;
 
-    const auto [header, data] = parseResponse.packet;
+    return handle_packet_data(client_id, parseResponse.packet);
+}
+
+Response ServerBase::handle_packet_data(uint32_t client_id, const Packet &packet) {
+    const auto [header, data] = packet;
 
     Response response;
     if (header->type == PacketType::GET_CONFIG) {

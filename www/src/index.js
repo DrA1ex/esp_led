@@ -65,8 +65,8 @@ ws.subscribe(this, WebSocketInteraction.DISCONNECTED, () => {
 });
 
 async function request_fx(cmd) {
-    const buffer = await ws.request(cmd);
-    const parser = new BinaryParser(buffer);
+    const {data} = await ws.request(cmd);
+    const parser = new BinaryParser(data.buffer, data.byteOffset);
 
     const count = parser.readUInt8();
 

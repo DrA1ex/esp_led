@@ -34,12 +34,12 @@ Response ServerBase::handle_packet_data(uint32_t client_id, const Packet &packet
         }
     }
 
-    if (response.is_ok()) {
+    if (response.is_ok() && header->type < PacketType::GET_CONFIG) {
         auto meta_iterator = PacketTypeMetadataMap.find(header->type);
         if (meta_iterator != PacketTypeMetadataMap.end()) {
             app().notify_parameter_changed(this, meta_iterator->second.property, &client_id);
         } else {
-            D_PRINTF("Unsupported notification packet type: %u\n", header->type);
+            D_PRINTF("Unsupported notification packet type: %s\n", __debug_enum_str(header->type));
         }
     }
 

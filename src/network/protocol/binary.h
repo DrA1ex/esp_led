@@ -83,7 +83,7 @@ Response BinaryProtocol::update_string_list_value(char (*destination)[StrSize], 
     }
 
     D_WRITE("Update string list ");
-    D_WRITE(to_underlying(header.type));
+    D_WRITE(__debug_enum_str(header.type));
     D_PRINTF(" (Count: %i)\n", updated_count);
 
     return Response::ok();
@@ -99,7 +99,7 @@ Response BinaryProtocol::update_parameter_value(T *parameter, const PacketHeader
     memcpy(parameter, data, sizeof(T));
 
     D_WRITE("Update parameter ");
-    D_WRITE(to_underlying(header.type));
+    D_WRITE(__debug_enum_str(header.type));
     D_WRITE(" = ");
 
     // Copy to aligned memory to avoid unaligned memory access

@@ -1,21 +1,23 @@
 #pragma once
 
-#include <cctype>
+#include <cstdint>
 
-enum class PacketType : uint8_t {
-    POWER_ON = 0x01,
-    POWER_OFF = 0x02,
+#include "utils/enum.h"
 
-    BRIGHTNESS = 0x03,
+MAKE_ENUM(PacketType, uint8_t,
+          POWER_ON, 0x01,
+          POWER_OFF, 0x02,
 
-    NIGHT_MODE_ENABLED = 0x20,
-    NIGHT_MODE_START = 0x21,
-    NIGHT_MODE_END = 0x22,
-    NIGHT_MODE_INTERVAL = 0x23,
-    NIGHT_MODE_BRIGHTNESS = 0x24,
+          BRIGHTNESS, 0x03,
 
-    GET_CONFIG = 0xa0,
+          NIGHT_MODE_ENABLED, 0x20,
+          NIGHT_MODE_START, 0x21,
+          NIGHT_MODE_END, 0x22,
+          NIGHT_MODE_INTERVAL, 0x23,
+          NIGHT_MODE_BRIGHTNESS, 0x24,
 
-    RESPONSE_STRING = 0xf0,
-    RESPONSE_BINARY = 0xf1,
-};
+          GET_CONFIG, 0xa0,
+
+          RESPONSE_STRING, 0xf0,
+          RESPONSE_BINARY, 0xf1,
+)

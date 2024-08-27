@@ -8,17 +8,15 @@
 #include "config.h"
 #include "network/enum.h"
 
-enum class NotificationProperty : uint8_t {
-    POWER,
-    BRIGHTNESS,
-
-    NIGHT_MODE_ENABLED,
-    NIGHT_MODE_START,
-    NIGHT_MODE_END,
-    NIGHT_MODE_INTERVAL,
-    NIGHT_MODE_BRIGHTNESS,
-
-};
+MAKE_ENUM(NotificationProperty, uint8_t,
+          POWER, 0,
+          BRIGHTNESS, 1,
+          NIGHT_MODE_ENABLED, 2,
+          NIGHT_MODE_START, 3,
+          NIGHT_MODE_END, 4,
+          NIGHT_MODE_INTERVAL, 5,
+          NIGHT_MODE_BRIGHTNESS, 6
+)
 
 struct PropertyMetadata {
     NotificationProperty property;

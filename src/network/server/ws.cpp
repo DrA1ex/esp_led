@@ -165,7 +165,7 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
 void WebSocketServer::_handle_notification(void *, NotificationProperty type, void *arg) {
     auto prop_iterator = PropertyMetadataMap.find(type);
     if (prop_iterator == PropertyMetadataMap.end()) {
-        D_PRINTF("Unsupported notification type %u\n", (uint8_t) type);
+        D_PRINTF("Unsupported notification type %s\n", __debug_enum_str(type));
         return;
     }
 
@@ -174,7 +174,8 @@ void WebSocketServer::_handle_notification(void *, NotificationProperty type, vo
 
     const auto &meta = prop[0];
 
-    D_PRINTF("Preparing notification data for %u, size: %u, offset: %u\n", type, meta.value_size, meta.value_offset);
+    D_PRINTF("Preparing notification data for %s, size: %u, offset: %u\n",
+             __debug_enum_str(type), meta.value_size, meta.value_offset);
 
     // Copy data to avoid unaligned memory access
     uint8_t data[meta.value_size];
@@ -184,8 +185,8 @@ void WebSocketServer::_handle_notification(void *, NotificationProperty type, vo
         notify_clients(client_id, meta.packet_type, data, meta.value_size);
     } else {
         if (meta.value_size != 1) {
-            D_PRINTF("Unsupported notification for trigger type %u. Expected size 1 byte, but got %u\n",
-                     (uint8_t) type, meta.value_size);
+            D_PRINTF("Unsupported notification for trigger type %s. Expected size 1 byte, but got %u\n",
+                     __debug_enum_str(type), meta.value_size);
             return;
         }
 

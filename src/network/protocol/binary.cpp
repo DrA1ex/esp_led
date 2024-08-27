@@ -29,6 +29,8 @@ PacketParsingResponse BinaryProtocol::parse_packet(const uint8_t *buffer, uint8_
         return PacketParsingResponse::fail(Response::code(ResponseCode::BAD_REQUEST), packet->request_id);
     }
 
+    D_PRINTF("---- Packet type: %s\n", __debug_enum_str(packet->type));
+
     const void *data = buffer + header_size;
     return PacketParsingResponse::ok({packet, data}, packet->request_id);
 }

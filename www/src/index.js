@@ -72,9 +72,9 @@ ws.subscribe(this, WebSocketInteraction.NOTIFICATION, (_, packet) => {
     if (!property) return console.error("Received notification for unknown property", packet.type);
 
     if (property.prop.cmd instanceof Array) {
-        window.__app.Config.setProperty(property.prop.key, property.prop.cmd[0] === packet.type);
+        window.__app.Config.setProperty(property.prop.key, property.prop.cmd[0] === packet.type, false);
     } else {
-        window.__app.Config.setProperty(property.prop.key, packet.parser()[`read${property.prop.kind}`]());
+        window.__app.Config.setProperty(property.prop.key, packet.parser()[`read${property.prop.kind}`](), false);
     }
 
     property.control.setValue(window.__app.Config.getProperty(property.prop.key));

@@ -50,16 +50,16 @@ export class Config extends EventEmitter {
         return (prop.transform ? prop.transform(value) : value) ?? prop.default;
     }
 
-    setProperty(key, value) {
+    setProperty(key, value, sendNotification = true) {
         if (!Properties[key]) {
             console.error(`Unknown property ${key}`);
             return;
         }
 
         const oldValue = this.getProperty(key);
-
         this.#setProperty(key, value);
-        this.emitEvent(Config.PROPERTY_CHANGED, {key, value, oldValue});
+
+        if (sendNotification) this.emitEvent(Config.PROPERTY_CHANGED, {key, value, oldValue});
     }
 
     #setProperty(key, value) {

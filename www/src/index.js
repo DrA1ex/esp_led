@@ -72,12 +72,12 @@ ws.subscribe(this, WebSocketInteraction.NOTIFICATION, (_, packet) => {
     if (!property) return console.error("Received notification for unknown property", packet.type);
 
     if (property.prop.cmd instanceof Array) {
-        window.__app.Config[property.prop.key] = property.prop.cmd[0] === packet.type;
+        window.__app.Config.setProperty(property.prop.key, property.prop.cmd[0] === packet.type);
     } else {
-        window.__app.Config[property.prop.key] = packet.parser()[`read${property.prop.kind}`]();
+        window.__app.Config.setProperty(property.prop.key, packet.parser()[`read${property.prop.kind}`]());
     }
 
-    property.control.setValue(window.__app.Config[property.prop.key]);
+    property.control.setValue(window.__app.Config.getProperty(property.prop.key));
 });
 
 async function request_fx(cmd) {
@@ -281,6 +281,7 @@ const sendChanges = FunctionUtils.throttle(async function (config, prop, value, 
         } else {
             const kind = prop.kind ?? "Uint8";
             const size = {
+                Boolean: 1,
                 Uint8: 1, Int8: 1,
                 Uint16: 2, Int16: 2,
                 Uint32: 4, Int32: 4,
@@ -293,9 +294,23 @@ const sendChanges = FunctionUtils.throttle(async function (config, prop, value, 
                 throw new Error(`Unknown kind: "${kind}"`);
             }
 
+            const serializeFn = {
+                Boolean: DataView.prototype.setUint8,
+                Uint8: DataView.prototype.setUint8,
+                Int8: DataView.prototype.setInt8,
+                Uint16: DataView.prototype.setUint16,
+                Int16: DataView.prototype.setInt16,
+                Uint32: DataView.prototype.setUint32,
+                Int32: DataView.prototype.setInt32,
+                BigUint64: DataView.prototype.setBigUint64,
+                BigInt64: DataView.prototype.setBigInt64,
+                Float32: DataView.prototype.setFloat32,
+                Float64: DataView.prototype.setFloat64,
+            }[kind];
+
             const req = new Uint8Array(size);
             const view = new DataView(req.buffer);
-            view[`set${kind}`](0, value, true);
+            serializeFn.call(view, 0, value, true);
 
             await ws.request(prop.cmd, req.buffer);
         }

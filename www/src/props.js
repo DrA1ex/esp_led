@@ -7,7 +7,7 @@ export const PropertyConfig = [{
     ],
 }, {
     key: "night_mode", section: "Night Mode", lock: true, props: [
-        {key: "nightMode.enabled", title: "Enabled", type: "trigger", cmd: PacketType.NIGHT_MODE_ENABLED},
+        {key: "nightMode.enabled", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.NIGHT_MODE_ENABLED},
         {key: "nightMode.brightness", title: "Brightness", type: "wheel", limit: 16383, kind: "Uint16", cmd: PacketType.NIGHT_MODE_BRIGHTNESS},
         {key: "nightMode.startTime", title: "Start Time", type: "time", kind: "Uint32", cmd: PacketType.NIGHT_MODE_START},
         {key: "nightMode.endTime", title: "End Time", type: "time", kind: "Uint32", cmd: PacketType.NIGHT_MODE_END},

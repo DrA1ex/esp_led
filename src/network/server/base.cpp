@@ -35,17 +35,11 @@ Response ServerBase::handle_packet_data(uint32_t client_id, const Packet &packet
     }
 
     if (response.is_ok()) {
-        switch (header->type) {
-            case PacketType::POWER_ON:
-            case PacketType::POWER_OFF:
-                app().notify_parameter_changed(this, NotificationProperty::POWER, &client_id);
-                break;
-
-            case PacketType::BRIGHTNESS:
-                app().notify_parameter_changed(this, NotificationProperty::BRIGHTNESS, &client_id);
-                break;
-
-            default:;
+        auto meta_iterator = PacketTypeMetadataMap.find(header->type);
+        if (meta_iterator != PacketTypeMetadataMap.end()) {
+            app().notify_parameter_changed(this, meta_iterator->second.property, &client_id);
+        } else {
+            D_PRINTF("Unsupported notification packet type: %u\n", header->type);
         }
     }
 

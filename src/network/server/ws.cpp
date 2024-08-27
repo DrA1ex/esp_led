@@ -174,6 +174,8 @@ void WebSocketServer::_handle_notification(void *, NotificationProperty type, vo
 
     const auto &meta = prop[0];
 
+    D_PRINTF("Preparing notification data for %u, size: %u, offset: %u\n", type, meta.value_size, meta.value_offset);
+
     // Copy data to avoid unaligned memory access
     uint8_t data[meta.value_size];
     memcpy(data, (uint8_t *) &app().config + meta.value_offset, meta.value_size);

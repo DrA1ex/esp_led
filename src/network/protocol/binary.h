@@ -101,7 +101,13 @@ Response BinaryProtocol::update_parameter_value(T *parameter, const PacketHeader
     D_WRITE("Update parameter ");
     D_WRITE(to_underlying(header.type));
     D_WRITE(" = ");
-    D_PRINT(to_underlying(*(T *) data));
+
+    // Copy to aligned memory to avoid unaligned memory access
+    {
+        uint8_t debug_data[sizeof(T)];
+        memcpy(debug_data, data, sizeof(T));
+        D_PRINT(to_underlying(*(T *) debug_data));
+    }
 
     return Response::ok();
 }

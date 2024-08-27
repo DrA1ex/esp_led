@@ -4,6 +4,7 @@
 #include <AsyncWebSocket.h>
 
 #include "base.h"
+#include "notifications.h"
 #include "misc/circular_buffer.h"
 #include "network/web.h"
 
@@ -37,4 +38,5 @@ protected:
 
 private:
     void _send_response(uint32_t client_id, uint16_t request_id, const Response &response);
+    void _handle_notification(void *sender, NotificationProperty type, void *arg);
 };

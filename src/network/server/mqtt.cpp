@@ -19,12 +19,12 @@ void MqttServer::begin() {
     _mqttClient.setServer(MQTT_HOST, MQTT_PORT);
     _mqttClient.setCredentials(MQTT_USER, MQTT_PASSWORD);
 
-    _app.e_property_changed.subscribe(this, PropertyChangedKind::POWER,
+    _app.e_property_changed.subscribe(this, NotificationProperty::POWER,
                                       [this](auto sender, auto, auto) {
                                           notify_power(_app.config.power);
                                       });
 
-    _app.e_property_changed.subscribe(this, PropertyChangedKind::BRIGHTNESS,
+    _app.e_property_changed.subscribe(this, NotificationProperty::BRIGHTNESS,
                                       [this](auto sender, auto, auto) {
                                           notify_brightness(_app.config.brightness);
                                       });
@@ -98,13 +98,13 @@ void MqttServer::_on_message(char *topic, char *payload, AsyncMqttClientMessageP
         _app.config.brightness = value;
         _app.load();
 
-        _app.e_property_changed.publish(this, PropertyChangedKind::BRIGHTNESS);
+        _app.e_property_changed.publish(this, NotificationProperty::BRIGHTNESS);
     } else if (topic_str == MQTT_TOPIC_POWER) {
         bool value = payload_str == "1";
         D_PRINTF("Set power %u\n", value);
 
         _app.set_power(value);
-        _app.e_property_changed.publish(this, PropertyChangedKind::POWER);
+        _app.e_property_changed.publish(this, NotificationProperty::POWER);
     }
 }
 

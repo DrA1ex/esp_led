@@ -16,16 +16,7 @@ void WebSocketServer::begin(WebServer &server) {
     _ws.onEvent(event_handler);
     server.add_handler(&_ws);
 
-    app().e_property_changed.subscribe(this, [this](auto, auto type, auto arg) {
-        auto client_id = arg ? *(uint32_t *) arg : 0;
-        switch (type) {
-            case PropertyChangedKind::BRIGHTNESS:
-                return notify_clients(client_id, PacketType::BRIGHTNESS, app().config.brightness);
-
-            case PropertyChangedKind::POWER:
-                return notify_clients(client_id, app().config.power ? PacketType::POWER_ON : PacketType::POWER_OFF);
-        }
-    });
+    app().e_property_changed.subscribe(this, std::bind(&WebSocketServer::_handle_notification, this, _1, _2, _3));
 
     D_WRITE("WebSocket server listening on path: ");
     D_PRINT(_path);
@@ -169,4 +160,34 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
     memcpy(response_data + sizeof(header), data, header.size);
 
     _ws.binary(client_id, response_data, sizeof(response_data));
+}
+
+void WebSocketServer::_handle_notification(void *, NotificationProperty type, void *arg) {
+    auto prop_iterator = PropertyMetadataMap.find(type);
+    if (prop_iterator == PropertyMetadataMap.end()) {
+        D_PRINTF("Unsupported notification type %u\n", (uint8_t) type);
+        return;
+    }
+
+    const std::vector<PropertyMetadata> &prop = prop_iterator->second;
+    auto client_id = arg ? *(uint32_t *) arg : 0;
+
+    const auto &meta = prop[0];
+
+    // Copy data to avoid unaligned memory access
+    uint8_t data[meta.value_size];
+    memcpy(data, (uint8_t *) &app().config + meta.value_offset, meta.value_size);
+
+    if (prop.size() == 1) {
+        notify_clients(client_id, meta.packet_type, data, meta.value_size);
+    } else {
+        if (meta.value_size != 1) {
+            D_PRINTF("Unsupported notification for trigger type %u. Expected size 1 byte, but got %u\n",
+                     (uint8_t) type, meta.value_size);
+            return;
+        }
+
+        bool trigger = *(bool *) data;
+        notify_clients(client_id, trigger ? meta.packet_type : prop[1].packet_type);
+    }
 }

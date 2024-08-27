@@ -38,11 +38,11 @@ Response ServerBase::handle_packet_data(uint32_t client_id, const Packet &packet
         switch (header->type) {
             case PacketType::POWER_ON:
             case PacketType::POWER_OFF:
-                app().notify_parameter_changed(this, PropertyChangedKind::POWER, &client_id);
+                app().notify_parameter_changed(this, NotificationProperty::POWER, &client_id);
                 break;
 
             case PacketType::BRIGHTNESS:
-                app().notify_parameter_changed(this, PropertyChangedKind::BRIGHTNESS, &client_id);
+                app().notify_parameter_changed(this, NotificationProperty::BRIGHTNESS, &client_id);
                 break;
 
             default:;

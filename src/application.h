@@ -1,15 +1,11 @@
 #pragma once
 
 #include "config.h"
+#include "notifications.h"
 #include "night_mode.h"
 
 #include "misc/event_topic.h"
 #include "misc/storage.h"
-
-enum class PropertyChangedKind : uint8_t {
-    POWER,
-    BRIGHTNESS
-};
 
 class Application {
 public:
@@ -18,7 +14,7 @@ public:
     Config &config;
     NightModeManager &night_mode_manager;
 
-    EventTopic<PropertyChangedKind> e_property_changed{};
+    EventTopic<NotificationProperty> e_property_changed{};
 
     unsigned long state_change_time = 0;
     AppState state = AppState::UNINITIALIZED;
@@ -37,7 +33,7 @@ public:
 
     void restart();
 
-    inline void notify_parameter_changed(void *sender, PropertyChangedKind param, void *arg = nullptr) {
+    inline void notify_parameter_changed(void *sender, NotificationProperty param, void *arg = nullptr) {
         e_property_changed.publish(sender, param, arg);
     }
 };

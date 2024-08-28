@@ -1,7 +1,7 @@
 #pragma once
 
 #include "config.h"
-#include "notifications.h"
+#include "metadata.h"
 #include "night_mode.h"
 
 #include "misc/event_topic.h"
@@ -36,4 +36,7 @@ public:
     inline void notify_parameter_changed(void *sender, NotificationProperty param, void *arg = nullptr) {
         e_property_changed.publish(sender, param, arg);
     }
+
+private:
+    uint16_t _convert_color(uint32_t color_data, uint32_t calibration_data, uint8_t bit);
 };

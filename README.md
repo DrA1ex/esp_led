@@ -1,5 +1,5 @@
 # esp-led
-Smart LED Control for ESP32/ESP8266
+Smart RGB/LED Control for ESP32/ESP8266
 
 ![esp_led local_(iPhone XR)](https://github.com/user-attachments/assets/ed7e8e77-52eb-44dc-898a-b081195702f2)
 

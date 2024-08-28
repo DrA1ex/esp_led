@@ -1,4 +1,5 @@
 import {InputControlBase} from "./base.js";
+import * as ColorUtils from "../utils/color.js"
 
 /**
  * @enum{number}
@@ -7,7 +8,8 @@ export const InputType = {
     text: "text",
     int: "int",
     float: "float",
-    time: "time"
+    time: "time",
+    color: "color",
 }
 
 export class InputControl extends InputControlBase {
@@ -23,13 +25,21 @@ export class InputControl extends InputControlBase {
         this.addClass("input");
 
         this.type = type;
-        this.element.type = type === InputType.time ? "time" : "text";
         this.element.onchange = this._onChange.bind(this);
 
         switch (type) {
             case InputType.time:
+                this.element.type = "time";
                 this.element.onfocus = () => this.element.showPicker();
                 break;
+
+            case InputType.color:
+                this.element.type = "color";
+                this.element.oninput = this._onChange.bind(this);
+                break
+
+            default:
+                this.element.type = "text";
         }
     }
 
@@ -48,6 +58,9 @@ export class InputControl extends InputControlBase {
             case InputType.time:
                 return this.element.valueAsNumber / 1000;
 
+            case InputType.color:
+                return ColorUtils.parseHexColor(this.element.value);
+
             default:
                 return this.element.value;
         }
@@ -57,6 +70,10 @@ export class InputControl extends InputControlBase {
         switch (this.type) {
             case InputType.time:
                 this.element.valueAsNumber = value * 1000;
+                break;
+
+            case InputType.color:
+                this.element.value = ColorUtils.rgbToHex(value ?? 0xffffff);
                 break;
 
             default:

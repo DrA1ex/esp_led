@@ -51,10 +51,22 @@ void setup() {
 
     config_storage.begin(&LittleFS);
 
+    config_storage.get().rgb_mode = RGB_MODE;
+
     analogWriteResolution(DAC_RESOLUTION);
 
+#if RGB_MODE == 1
+    pinMode(LED_R_PIN, OUTPUT);
+    pinMode(LED_G_PIN, OUTPUT);
+    pinMode(LED_B_PIN, OUTPUT);
+
+    digitalWrite(LED_R_PIN, PIN_DISABLED);
+    digitalWrite(LED_G_PIN, PIN_DISABLED);
+    digitalWrite(LED_B_PIN, PIN_DISABLED);
+#else
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, PIN_DISABLED);
+#endif
 
     global_timer.add_interval(animation_loop, 1000 / 60);
     global_timer.add_interval(service_loop, 20);

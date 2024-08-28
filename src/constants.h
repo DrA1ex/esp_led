@@ -12,7 +12,15 @@
 
 #define MDNS_NAME                               "esp_led"
 
+#define RGB_MODE                                (0u)                    // RGB LED mode
+
+#if RGB_MODE == 1
+#define LED_R_PIN                               (0u) // D3
+#define LED_G_PIN                               (4u) // D2
+#define LED_B_PIN                               (5u) // D1
+#else
 #define LED_PIN                                 (1u)
+#endif
 
 
 #define POWER_CHANGE_TIMEOUT                    (1000u)                // Timeout for power change animation

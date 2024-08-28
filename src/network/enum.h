@@ -10,6 +10,9 @@ MAKE_ENUM(PacketType, uint8_t,
 
           BRIGHTNESS, 0x03,
 
+          COLOR, 0x10,
+          CALIBRATION, 0x11,
+
           NIGHT_MODE_ENABLED, 0x20,
           NIGHT_MODE_START, 0x21,
           NIGHT_MODE_END, 0x22,

@@ -11,11 +11,13 @@
 MAKE_ENUM(NotificationProperty, uint8_t,
           POWER, 0,
           BRIGHTNESS, 1,
-          NIGHT_MODE_ENABLED, 2,
-          NIGHT_MODE_START, 3,
-          NIGHT_MODE_END, 4,
-          NIGHT_MODE_INTERVAL, 5,
-          NIGHT_MODE_BRIGHTNESS, 6
+          COLOR, 2,
+          CALIBRATION, 3,
+          NIGHT_MODE_ENABLED, 4,
+          NIGHT_MODE_START, 5,
+          NIGHT_MODE_END, 6,
+          NIGHT_MODE_INTERVAL, 7,
+          NIGHT_MODE_BRIGHTNESS, 8
 )
 
 struct PropertyMetadata {

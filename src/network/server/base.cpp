@@ -62,27 +62,12 @@ Response ServerBase::_handle_command(PacketHeader *header, const void *) {
 }
 
 Response ServerBase::_handle_parameter_update(PacketHeader *header, const void *data) {
-    switch (header->type) {
-        case PacketType::BRIGHTNESS:
-            return _protocol.update_parameter_value(&app().config.brightness, *header, data);
+    auto meta_iter = PacketTypeMetadataMap.find(header->type);
 
-        case PacketType::NIGHT_MODE_ENABLED:
-            return _protocol.update_parameter_value(&app().config.night_mode.enabled, *header, data);
-
-        case PacketType::NIGHT_MODE_BRIGHTNESS:
-            return _protocol.update_parameter_value(&app().config.night_mode.brightness, *header, data);
-
-        case PacketType::NIGHT_MODE_START:
-            return _protocol.update_parameter_value(&app().config.night_mode.start_time, *header, data);
-
-        case PacketType::NIGHT_MODE_END:
-            return _protocol.update_parameter_value(&app().config.night_mode.end_time, *header, data);
-
-        case PacketType::NIGHT_MODE_INTERVAL:
-            return _protocol.update_parameter_value(&app().config.night_mode.switch_interval, *header, data);
-
-
-        default:
-            return Response::code(ResponseCode::BAD_COMMAND);
+    if (meta_iter == PacketTypeMetadataMap.end()) {
+        D_PRINTF("Received unsupported parameter: %u (%s)\n", _protocol.to_underlying(header->type), __debug_enum_str(header->type));
+        return Response::code(ResponseCode::BAD_COMMAND);
     }
+    auto &meta = meta_iter->second;
+    return _protocol.update_parameter_value(((uint8_t * )(&app().config)) + meta.value_offset, meta.value_size, *header, data);
 }

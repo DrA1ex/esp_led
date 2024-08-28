@@ -16,6 +16,8 @@ public:
     template<typename T, typename = std::enable_if<std::is_enum<T>::value || std::is_integral<T>::value>>
     Response update_parameter_value(T *parameter, const PacketHeader &header, const void *data);
 
+    Response update_parameter_value(uint8_t *parameter, uint8_t size, const PacketHeader &header, const void *data);
+
     Response update_string_value(char *str, uint8_t max_size, const PacketHeader &header, const void *data);
 
     template<uint8_t StrSize>
@@ -39,7 +41,7 @@ constexpr auto BinaryProtocol::to_underlying(E e) noexcept {
 
 template<typename T>
 Response BinaryProtocol::serialize(const T &obj) {
-    return Response{ResponseType::BINARY, {.buffer = {.size = sizeof(obj), .data=(uint8_t *) &obj}}};
+    return Response{ResponseType::BINARY, {.buffer = {.size = sizeof(obj), .data=(uint8_t * ) & obj}}};
 }
 
 template<uint8_t StrSize>

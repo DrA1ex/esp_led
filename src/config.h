@@ -29,8 +29,12 @@ struct __attribute ((packed)) NightModeConfig {
 
 struct __attribute ((packed)) Config {
     bool power = true;
+    bool rgb_mode = true;
 
     uint16_t brightness = 2048;
+
+    uint32_t color = ~0u;
+    uint32_t calibration = ~0u;
 
     NightModeConfig night_mode;
 };

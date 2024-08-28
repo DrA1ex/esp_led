@@ -173,6 +173,10 @@ function initUi() {
                     control.setMaxLength(prop.maxLength ?? 255);
                     break;
 
+                case "color":
+                    control = new InputControl(document.createElement("input"), InputType.color);
+                    break;
+
                 case "button":
                     control = new ButtonControl(document.createElement("a"));
                     control.addClass("m-top");
@@ -227,9 +231,20 @@ function refreshConfig() {
     for (const cfg of PropertyConfig) {
         const section = window.__app.Sections[cfg.key];
         for (const prop of cfg.props) {
-            if (!prop.key) continue;
+            if (!prop.key || prop.type === "skip") continue;
 
-            const control = section.props[prop.key].control;
+            const {control, title} = section.props[prop.key];
+
+            if (prop.visibleIf) {
+                if (config.getProperty(prop.visibleIf)) {
+                    control.setVisibility(true);
+                    title.setVisibility(true);
+                } else {
+                    control.setVisibility(false);
+                    title.setVisibility(false);
+                    continue;
+                }
+            }
 
             if (prop.type === "select") {
                 control.setOptions(lists[prop.list].map(v => ({key: v.code, label: v.name})));

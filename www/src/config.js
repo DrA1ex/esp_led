@@ -11,7 +11,10 @@ export class Config extends EventEmitter {
     #ws;
 
     power;
+    rgb_mode;
     brightness;
+    color;
+    calibration
     nightMode;
 
     constructor(ws) {
@@ -25,7 +28,12 @@ export class Config extends EventEmitter {
         const parser = new BinaryParser(data.buffer, data.byteOffset);
 
         this.power = parser.readBoolean();
+        this.rgb_mode = parser.readBoolean();
+
         this.brightness = parser.readUint16();
+
+        this.color = parser.readUint32();
+        this.calibration = parser.readUint32();
 
         this.nightMode = {
             enabled: parser.readBoolean(),

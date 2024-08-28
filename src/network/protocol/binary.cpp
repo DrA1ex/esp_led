@@ -4,10 +4,7 @@
 
 PacketParsingResponse BinaryProtocol::parse_packet(const uint8_t *buffer, uint8_t length) {
     D_WRITE("Packet body: ");
-    for (unsigned int i = 0; i < length; ++i) {
-        D_PRINTF("%02X ", buffer[i]);
-    }
-    D_PRINT();
+    D_PRINT_HEX(buffer, length);
 
     const auto header_size = sizeof(PacketHeader);
     if (length < header_size) {
@@ -51,3 +48,19 @@ Response BinaryProtocol::update_string_value(char *str, uint8_t max_size, const 
     return Response::ok();
 }
 
+Response BinaryProtocol::update_parameter_value(uint8_t *parameter, uint8_t size, const PacketHeader &header, const void *data) {
+    if (header.size != size) {
+        D_PRINTF("Unable to update value, bad size. Got %u, expected %u\n", header.size, size);
+        return Response::code(ResponseCode::BAD_REQUEST);
+    }
+
+    memcpy(parameter, data, size);
+
+    D_WRITE("Update parameter ");
+    D_WRITE(__debug_enum_str(header.type));
+    D_WRITE(" = ");
+
+    D_PRINT_HEX(parameter, size);
+
+    return Response::ok();
+}

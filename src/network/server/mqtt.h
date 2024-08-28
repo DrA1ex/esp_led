@@ -27,6 +27,7 @@ public:
 
     void notify_brightness(uint16_t value);
     void notify_power(bool value);
+    void notify_color(uint32_t value);
 
 protected:
     void _on_connect(bool sessionPresent);

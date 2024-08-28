@@ -48,13 +48,13 @@ void Application::set_brightness(uint16_t value) {
             log10f(10 - (float) value * 9 / DAC_MAX_VALUE) * DAC_MAX_VALUE);
 
 #if RGB_MODE == 1
-    uint16_t red = _convert_color(config.color, config.calibration, 24);
+    uint16_t red = _convert_color(config.color, config.calibration, 16);
     analogWrite(LED_R_PIN, (uint32_t) red * brightness / DAC_MAX_VALUE);
 
-    uint16_t green = _convert_color(config.color, config.calibration, 16);
+    uint16_t green = _convert_color(config.color, config.calibration, 8);
     analogWrite(LED_G_PIN, (uint32_t) green * brightness / DAC_MAX_VALUE);
 
-    uint16_t blue = _convert_color(config.color, config.calibration, 8);
+    uint16_t blue = _convert_color(config.color, config.calibration, 0);
     analogWrite(LED_B_PIN, (uint32_t) blue * brightness / DAC_MAX_VALUE);
 #else
     analogWrite(LED_PIN, brightness);

@@ -29,6 +29,11 @@ void MqttServer::begin() {
                                           notify_brightness(_app.config.brightness);
                                       });
 
+    _app.e_property_changed.subscribe(this, NotificationProperty::COLOR,
+                                      [this](auto sender, auto, auto) {
+                                          notify_color(_app.config.color);
+                                      });
+
     _connect();
 }
 
@@ -64,6 +69,7 @@ void MqttServer::_on_connect(bool sessionPresent) {
 
     _subscribe(MQTT_TOPIC_BRIGHTNESS, 1);
     _subscribe(MQTT_TOPIC_POWER, 1);
+    _subscribe(MQTT_TOPIC_COLOR, 1);
 
     _change_state(MqttServerState::CONNECTED);
     _last_connection_attempt_time = 0;
@@ -105,6 +111,16 @@ void MqttServer::_on_message(char *topic, char *payload, AsyncMqttClientMessageP
 
         _app.set_power(value);
         _app.e_property_changed.publish(this, NotificationProperty::POWER);
+    } else if (topic_str == MQTT_TOPIC_COLOR) {
+        uint32_t value = payload_str.toInt();
+
+        D_WRITE("Set color: ");
+        D_PRINT_HEX(((uint8_t * )(&value)), sizeof(value));
+
+        _app.config.color = value;
+        _app.load();
+
+        _app.e_property_changed.publish(this, NotificationProperty::COLOR);
     }
 }
 
@@ -123,6 +139,11 @@ void MqttServer::notify_brightness(uint16_t value) {
 
 void MqttServer::notify_power(bool value) {
     _publish(MQTT_OUT_TOPIC_POWER, 1, value ? "1" : "0", 1);
+}
+
+void MqttServer::notify_color(uint32_t value) {
+    String value_str = String(value);
+    _publish(MQTT_OUT_TOPIC_COLOR, 1, value_str.c_str(), value_str.length());
 }
 
 void MqttServer::_subscribe(const char *topic, uint8_t qos) {

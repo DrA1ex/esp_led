@@ -6,6 +6,12 @@ Application::Application(Storage<Config> &config_storage, NightModeManager &nigh
         config_storage(config_storage), config(config_storage.get()), night_mode_manager(night_mode_manager) {}
 
 void Application::load() {
+#if RGB_MODE == 1
+    _color_r = _convert_color(config.color, config.calibration, 16);
+    _color_g = _convert_color(config.color, config.calibration, 8);
+    _color_b = _convert_color(config.color, config.calibration, 0);
+#endif
+
     set_brightness(config.power ? brightness() : PIN_DISABLED);
 }
 
@@ -48,14 +54,9 @@ void Application::set_brightness(uint16_t value) {
             log10f(10 - (float) value * 9 / DAC_MAX_VALUE) * DAC_MAX_VALUE);
 
 #if RGB_MODE == 1
-    uint16_t red = _convert_color(config.color, config.calibration, 16);
-    analogWrite(LED_R_PIN, (uint32_t) red * brightness / DAC_MAX_VALUE);
-
-    uint16_t green = _convert_color(config.color, config.calibration, 8);
-    analogWrite(LED_G_PIN, (uint32_t) green * brightness / DAC_MAX_VALUE);
-
-    uint16_t blue = _convert_color(config.color, config.calibration, 0);
-    analogWrite(LED_B_PIN, (uint32_t) blue * brightness / DAC_MAX_VALUE);
+    analogWrite(LED_R_PIN, (uint32_t) _color_r * brightness / DAC_MAX_VALUE);
+    analogWrite(LED_G_PIN, (uint32_t) _color_g * brightness / DAC_MAX_VALUE);
+    analogWrite(LED_B_PIN, (uint32_t) _color_b * brightness / DAC_MAX_VALUE);
 #else
     analogWrite(LED_PIN, brightness);
 #endif
@@ -68,9 +69,28 @@ uint16_t Application::brightness() const {
     return std::min(DAC_MAX_VALUE, result);
 }
 
+#if RGB_MODE == 1
 uint16_t Application::_convert_color(uint32_t color_data, uint32_t calibration_data, uint8_t bit) {
     uint8_t color = (color_data >> bit) & 0xff;
     uint8_t calibration = (calibration_data >> bit) & 0xff;
 
-    return map16((uint16_t) color * calibration / 255, 255, DAC_MAX_VALUE);
+    uint8_t calibrated_color = (uint16_t) color * calibration / 255;
+    return map16(_apply_gamma(calibrated_color), 255, DAC_MAX_VALUE);
 }
+
+uint8_t Application::_apply_gamma(uint8_t color, float gamma) {
+    // FastLED: colorutils.cpp@1239
+    if (gamma == 1.0f) return color;
+
+    float orig;
+    float adj;
+    orig = (float) (color) / (255.0);
+    adj = pow(orig, gamma) * (255.0);
+    uint8_t result = (uint8_t) (adj);
+    if ((color > 0) && (result == 0)) {
+        result = 1; // never gamma-adjust a positive number down to zero
+    }
+
+    return result;
+}
+#endif

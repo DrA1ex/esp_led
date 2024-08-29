@@ -24,3 +24,5 @@
 #define DAC_MAX_VALUE                           ((uint16_t)((1u << DAC_RESOLUTION) - 1))
 
 #define NTP_UPDATE_INTERVAL                     (24ul * 3600 * 1000)
+
+#define GAMMA                                   (2.2f)

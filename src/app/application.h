@@ -38,5 +38,12 @@ public:
     }
 
 private:
+#if RGB_MODE == 1
+    uint16_t _color_r;
+    uint16_t _color_g;
+    uint16_t _color_b;
+
     uint16_t _convert_color(uint32_t color_data, uint32_t calibration_data, uint8_t bit);
+    uint8_t _apply_gamma(uint8_t color, float gamma = GAMMA);
+#endif
 };

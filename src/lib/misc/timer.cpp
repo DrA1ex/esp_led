@@ -1,7 +1,7 @@
 #include "Arduino.h"
 
-#include "debug.h"
-#include "timer.h"
+#include "./timer.h"
+#include "../debug.h"
 
 Timer::~Timer() {
     if (_entries == nullptr) return;

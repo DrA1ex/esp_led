@@ -2,7 +2,7 @@
 
 #include "constants.h"
 
-std::map<PacketType, PropertyMetadata> PacketTypeMetadataMap = {
+std::map<PacketType, AppPropertyMetadata> PacketTypeMetadataMap = {
         {
                 PacketType::POWER_ON,
                 {
@@ -79,29 +79,31 @@ std::map<PacketType, PropertyMetadata> PacketTypeMetadataMap = {
         },
 };
 
-std::map<NotificationProperty, std::vector<PropertyMetadata>> PropertyMetadataMap =
+std::map<NotificationProperty, std::vector<AppPropertyMetadata>> PropertyMetadataMap =
         _build_property_metadata_map(PacketTypeMetadataMap);
 
-std::map<String, PropertyMetadata> TopicPropertyMetadata =
+std::map<String, AppPropertyMetadata> TopicPropertyMetadata =
         _build_topic_property_metadata_map(PacketTypeMetadataMap);
 
-std::map<NotificationProperty, std::vector<PropertyMetadata>> _build_property_metadata_map(
-        std::map<PacketType, PropertyMetadata> &packetMapping) {
-    std::map<NotificationProperty, std::vector<PropertyMetadata>> result;
+std::map<NotificationProperty, std::vector<AppPropertyMetadata>> _build_property_metadata_map(
+        std::map<PacketType, AppPropertyMetadata> &packetMapping) {
+    std::map<NotificationProperty, std::vector<AppPropertyMetadata>> result;
 
     for (auto &[packetType, metadata]: packetMapping) {
-        std::vector<PropertyMetadata> &prop = result[metadata.property];
+        std::vector<AppPropertyMetadata> &prop = result[metadata.property];
         prop.push_back(metadata);
     }
 
     return result;
 }
 
-std::map<String, PropertyMetadata> _build_topic_property_metadata_map(
-        std::map<PacketType, PropertyMetadata> &packetMapping) {
-    std::map<String, PropertyMetadata> result;
+std::map<String, AppPropertyMetadata> _build_topic_property_metadata_map(
+        std::map<PacketType, AppPropertyMetadata> &packetMapping) {
+    std::map<String, AppPropertyMetadata> result;
 
     for (auto &[packetType, metadata]: packetMapping) {
+        if (metadata.mqtt_in_topic == nullptr) continue;
+
         result[metadata.mqtt_in_topic] = metadata;
     }
 

@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-#include "network/enum.h"
-
 enum class ResponseType : uint8_t {
     CODE,
     STRING,
@@ -71,28 +69,31 @@ struct Response {
     }
 };
 
+template<typename PacketEnumT, typename = std::enable_if_t<std::is_enum_v<PacketEnumT>>>
 struct __attribute__ ((packed))  PacketHeader {
     uint16_t signature;
     uint16_t request_id;
-    PacketType type;
+    PacketEnumT type;
     uint8_t size;
 };
 
+template<typename PacketEnumT, typename = std::enable_if_t<std::is_enum_v<PacketEnumT>>>
 struct Packet {
-    PacketHeader *header;
+    PacketHeader<PacketEnumT> *header;
     const void *data;
 };
 
+template<typename PacketEnumT, typename = std::enable_if_t<std::is_enum_v<PacketEnumT>>>
 struct PacketParsingResponse {
     bool success;
     uint16_t request_id;
 
     union {
-        Packet packet;
+        Packet<PacketEnumT> packet;
         Response response;
     };
 
-    static PacketParsingResponse ok(Packet &&packet, uint16_t request_id = 0) {
+    static PacketParsingResponse ok(Packet<PacketEnumT> &&packet, uint16_t request_id = 0) {
         return PacketParsingResponse{.success = true, .request_id = request_id, .packet = packet};
     }
 

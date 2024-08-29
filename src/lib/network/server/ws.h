@@ -1,38 +1,96 @@
-#include "ws.h"
+#pragma once
 
-#include <functional>
+#include <AsyncWebSocket.h>
 
-#include "debug.h"
-#include "app/application.h"
+#include "base.h"
+#include "../protocol/packet_handler.h"
+
+#include "../web.h"
+#include "../../misc/circular_buffer.h"
+
+#ifndef WS_MAX_PACKET_SIZE
+#define WS_MAX_PACKET_SIZE                      (260u)
+#endif
+
+#ifndef WS_MAX_PACKET_QUEUE
+#define WS_MAX_PACKET_QUEUE                     (10u)
+#endif
+
+struct WebSocketRequest {
+    uint32_t client_id = 0;
+    size_t size = 0;
+    uint8_t data[WS_MAX_PACKET_SIZE] = {};
+};
+
+template<typename ApplicationT, typename = std::enable_if_t<std::is_base_of_v<
+        ApplicationAbstract<typename ApplicationT::ConfigT, typename ApplicationT::MetaPropT>, ApplicationT>>>
+class WebSocketServer : ServerBase<ApplicationT> {
+    using PropEnumT = typename ApplicationT::PropEnumT;
+    using PacketEnumT = typename ApplicationT::PacketEnumT;
+
+    using PacketHandlerT = PacketHandlerBase<ApplicationT>;
+
+    CircularBuffer<WebSocketRequest, WS_MAX_PACKET_QUEUE> _request_queue;
+
+    PacketHandlerT &_handler;
+    const char *_path;
+    AsyncWebSocket _ws;
+
+public:
+    explicit WebSocketServer(ApplicationT &app, PacketHandlerT &handler, const char *path = "/ws");
+
+    void begin(WebServer &server);
+
+    virtual void handle_incoming_data() override;
+
+protected:
+    void on_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+
+    void notify_clients(uint32_t sender_id, PacketEnumT type);
+    void notify_clients(uint32_t sender_id, PacketEnumT type, const void *data, uint8_t size);
+
+    template<typename T>
+    void notify_clients(uint32_t sender_id, PacketEnumT type, const T &value);
+
+private:
+    void _send_response(uint32_t client_id, uint16_t request_id, const Response &response);
+    void _handle_notification(void *sender, PropEnumT type, void *arg);
+};
 
 
-WebSocketServer::WebSocketServer(Application &app, const char *path) : ServerBase(app), _path(path), _ws(path) {}
+template<typename ApplicationT, typename C1>
+WebSocketServer<ApplicationT, C1>::WebSocketServer(ApplicationT &app, PacketHandlerT &handler, const char *path) :
+        ServerBase<ApplicationT>(app),
+        _handler(handler), _path(path), _ws(path) {}
 
 
-void WebSocketServer::begin(WebServer &server) {
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::begin(WebServer &server) {
     using namespace std::placeholders;
     auto event_handler = std::bind(&WebSocketServer::on_event, this, _1, _2, _3, _4, _5, _6);
 
     _ws.onEvent(event_handler);
     server.add_handler(&_ws);
 
-    app().e_property_changed.subscribe(this, std::bind(&WebSocketServer::_handle_notification, this, _1, _2, _3));
+    this->app().event_property_changed().subscribe(this,
+                                                   std::bind(&WebSocketServer<ApplicationT, C1>::_handle_notification, this, _1, _2, _3));
 
     D_WRITE("WebSocket server listening on path: ");
     D_PRINT(_path);
 }
 
-void WebSocketServer::handle_incoming_data() {
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::handle_incoming_data() {
     _ws.cleanupClients();
 
     while (_request_queue.can_pop()) {
         auto &request = *_request_queue.pop();
 
-        auto parsingResponse = parse_packet(request.data, request.size);
+        auto parsingResponse = _handler.parse_packet(request.data, request.size);
 
         Response response;
         if (parsingResponse.success) {
-            response = handle_packet_data(request.client_id, parsingResponse.packet);
+            response = _handler.handle_packet_data(request.client_id, parsingResponse.packet);
         } else {
             response = parsingResponse.response;
         }
@@ -41,12 +99,13 @@ void WebSocketServer::handle_incoming_data() {
     }
 }
 
-void WebSocketServer::on_event(AsyncWebSocket *,
-                               AsyncWebSocketClient *client,
-                               AwsEventType type,
-                               void *,
-                               uint8_t *data,
-                               size_t len) {
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::on_event(AsyncWebSocket *,
+                                                 AsyncWebSocketClient *client,
+                                                 AwsEventType type,
+                                                 void *,
+                                                 uint8_t *data,
+                                                 size_t len) {
 
     switch (type) {
         case WS_EVT_CONNECT:
@@ -91,15 +150,17 @@ void WebSocketServer::on_event(AsyncWebSocket *,
     }
 }
 
-void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type) {
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::notify_clients(uint32_t sender_id, PacketEnumT type) {
     notify_clients(sender_id, type, nullptr, 0);
 }
 
-void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const void *data, uint8_t size) {
-    uint8_t message[sizeof(PacketHeader) + size];
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::notify_clients(uint32_t sender_id, PacketEnumT type, const void *data, uint8_t size) {
+    uint8_t message[sizeof(PacketHeader<PacketEnumT>) + size];
 
-    (*(PacketHeader *) message) = PacketHeader{PACKET_SIGNATURE, 0, type, size};
-    mempcpy(message + sizeof(PacketHeader), data, size);
+    (*(PacketHeader<PacketEnumT> *) message) = PacketHeader<PacketEnumT>{PACKET_SIGNATURE, 0, type, size};
+    mempcpy(message + sizeof(PacketHeader<PacketEnumT>), data, size);
 
     D_PRINTF("WebSocket send message total size: %u (data size: %u)\n", sizeof(message), size);
 
@@ -110,15 +171,17 @@ void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const 
     }
 }
 
+template<typename ApplicationT, typename C1>
 template<typename T>
-void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const T &value) {
+void WebSocketServer<ApplicationT, C1>::notify_clients(uint32_t sender_id, PacketEnumT type, const T &value) {
     D_PRINTF("WebSocket send value message size: %u\n", sizeof(value));
 
     notify_clients(sender_id, type, &value, sizeof(value));
 }
 
-void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, const Response &response) {
-    auto header = PacketHeader{
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::_send_response(uint32_t client_id, uint16_t request_id, const Response &response) {
+    auto header = PacketHeader<PacketEnumT>{
             .signature = PACKET_SIGNATURE,
             .request_id = request_id
     };
@@ -127,13 +190,13 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
 
     switch (response.type) {
         case ResponseType::CODE:
-            header.type = PacketType::RESPONSE_STRING;
+            header.type = PacketEnumT::RESPONSE_STRING;
             data = (void *) response.code_string();
             header.size = strlen((const char *) data);
             break;
 
         case ResponseType::STRING:
-            header.type = PacketType::RESPONSE_STRING;
+            header.type = PacketEnumT::RESPONSE_STRING;
             header.size = strlen(response.body.str);
             data = (void *) response.body.str;
             break;
@@ -144,7 +207,7 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
                 return _send_response(client_id, request_id, Response::code(ResponseCode::INTERNAL_ERROR));
             }
 
-            header.type = PacketType::RESPONSE_BINARY;
+            header.type = PacketEnumT::RESPONSE_BINARY;
             header.size = response.body.buffer.size;
             data = (void *) response.body.buffer.data;
             break;
@@ -162,14 +225,17 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
     _ws.binary(client_id, response_data, sizeof(response_data));
 }
 
-void WebSocketServer::_handle_notification(void *, NotificationProperty type, void *arg) {
-    auto prop_iterator = PropertyMetadataMap.find(type);
-    if (prop_iterator == PropertyMetadataMap.end()) {
+template<typename ApplicationT, typename C1>
+void WebSocketServer<ApplicationT, C1>::_handle_notification(void *, PropEnumT type, void *arg) {
+    const auto &prop_meta = this->app().property_meta();
+
+    const auto prop_iterator = prop_meta.find(type);
+    if (prop_iterator == prop_meta.cend()) {
         D_PRINTF("WebSocket unsupported notification type %s\n", __debug_enum_str(type));
         return;
     }
 
-    const std::vector<PropertyMetadata> &prop = prop_iterator->second;
+    const auto &prop = prop_iterator->second;
     auto client_id = arg ? *(uint32_t *) arg : 0;
 
     const auto &meta = prop[0];
@@ -179,7 +245,7 @@ void WebSocketServer::_handle_notification(void *, NotificationProperty type, vo
 
     // Copy data to avoid unaligned memory access
     uint8_t data[meta.value_size];
-    memcpy(data, (uint8_t *) &app().config + meta.value_offset, meta.value_size);
+    memcpy(data, (uint8_t *) &this->app().config() + meta.value_offset, meta.value_size);
 
     if (prop.size() == 1) {
         notify_clients(client_id, meta.packet_type, data, meta.value_size);

@@ -3,16 +3,16 @@
 #include "utils/math.h"
 
 Application::Application(Storage<Config> &config_storage, NightModeManager &night_mode_manager) :
-        config_storage(config_storage), config(config_storage.get()), night_mode_manager(night_mode_manager) {}
+        _config(config_storage.get()), config_storage(config_storage), night_mode_manager(night_mode_manager) {}
 
 void Application::load() {
 #if RGB_MODE == 1
-    _color_r = _convert_color(config.color, config.calibration, 16);
-    _color_g = _convert_color(config.color, config.calibration, 8);
-    _color_b = _convert_color(config.color, config.calibration, 0);
+    _color_r = _convert_color(_config.color, _config.calibration, 16);
+    _color_g = _convert_color(_config.color, _config.calibration, 8);
+    _color_b = _convert_color(_config.color, _config.calibration, 0);
 #endif
 
-    set_brightness(config.power ? brightness() : PIN_DISABLED);
+    set_brightness(_config.power ? brightness() : PIN_DISABLED);
 }
 
 void Application::update() {
@@ -29,12 +29,12 @@ void Application::change_state(AppState s) {
 }
 
 void Application::set_power(bool on) {
-    config.power = on;
+    _config.power = on;
 
-    D_PRINTF("Turning Power: %s\n", config.power ? "ON" : "OFF");
+    D_PRINTF("Turning Power: %s\n", _config.power ? "ON" : "OFF");
 
     if (state != AppState::INITIALIZATION) {
-        change_state(config.power ? AppState::TURNING_ON : AppState::TURNING_OFF);
+        change_state(_config.power ? AppState::TURNING_ON : AppState::TURNING_OFF);
     }
 
     config_storage.save();
@@ -64,7 +64,7 @@ void Application::set_brightness(uint16_t value) {
 
 uint16_t Application::brightness() const {
     uint16_t result = night_mode_manager.is_night_time()
-                      ? night_mode_manager.get_brightness() : config.brightness;
+                      ? night_mode_manager.get_brightness() : _config.brightness;
 
     return std::min(DAC_MAX_VALUE, result);
 }

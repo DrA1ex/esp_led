@@ -1,6 +1,6 @@
 #include "night_mode.h"
 
-#include "misc/ntp_time.h"
+#include "lib/misc/ntp_time.h"
 
 #include "utils/math.h"
 

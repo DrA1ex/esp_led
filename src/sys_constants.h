@@ -1,7 +1,7 @@
 #pragma once
 
-#define WIFI_AP_MODE                            0
-#define WIFI_STA_MODE                           1
+#define WIFI_AP_MODE                            WifiMode::AP
+#define WIFI_STA_MODE                           WifiMode::STA
 
 #define WS_MAX_PACKET_SIZE                      (260u)
 #define WS_MAX_PACKET_QUEUE                     (10u)

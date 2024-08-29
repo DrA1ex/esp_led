@@ -2,22 +2,27 @@
 #include <ArduinoOTA.h>
 #include <LittleFS.h>
 
-#include "debug.h"
+#include "constants.h"
+#include "credentials.h"
+
+#include "lib/misc/event_topic.h"
+#include "lib/misc/ntp_time.h"
+#include "lib/misc/storage.h"
+#include "lib/misc/timer.h"
+
+#include "lib/network/web.h"
+#include "lib/network/wifi.h"
+#include "lib/network/server/ws.h"
+
+#include "lib/debug.h"
 
 #include "app/config.h"
 #include "app/application.h"
 #include "app/night_mode.h"
 
-#include "misc/event_topic.h"
-#include "misc/ntp_time.h"
-#include "misc/storage.h"
-#include "misc/timer.h"
-
-#include "network/web.h"
-#include "network/wifi.h"
 #include "network/server/api.h"
+#include "network/server/handler.h"
 #include "network/server/mqtt.h"
-#include "network/server/ws.h"
 
 #include "utils/math.h"
 
@@ -28,12 +33,15 @@ Storage<Config> config_storage(global_timer, "config", STORAGE_CONFIG_VERSION);
 NightModeManager night_mode_manager(config_storage.get());
 Application app(config_storage, night_mode_manager);
 
-WifiManager wifi_manager;
+WifiManager wifi_manager(WIFI_SSID, WIFI_PASSWORD, WIFI_CONNECTION_CHECK_INTERVAL);
 WebServer web_server(WEB_PORT);
+
 
 ApiWebServer api_server(app);
 MqttServer mqtt_server(app);
-WebSocketServer ws_server(app);
+
+PacketHandler packet_handler(app);
+WebSocketServer ws_server(app, packet_handler);
 
 NtpTime ntp_time;
 
@@ -42,7 +50,9 @@ void service_loop(void *);
 
 void setup() {
 #if defined(DEBUG)
-    Serial.begin(115200);
+    Serial.begin(74880);
+    D_PRINT();
+
     delay(2000);
 #endif
 
@@ -92,7 +102,7 @@ void animation_loop(void *) {
             break;
 
         case AppState::INITIALIZATION: {
-            if (app.config.power) {
+            if (app.config().power) {
                 const auto factor = map16(
                         (millis() - app.state_change_time) % WIFI_CONNECT_FLASH_TIMEOUT,
                         WIFI_CONNECT_FLASH_TIMEOUT,
@@ -125,7 +135,7 @@ void animation_loop(void *) {
             break;
         }
         case AppState::STAND_BY:
-            if (app.config.power && night_mode_manager.is_night_time()) {
+            if (app.config().power && night_mode_manager.is_night_time()) {
                 auto brightness = night_mode_manager.get_brightness();
                 app.set_brightness(brightness);
             }
@@ -163,9 +173,11 @@ void service_loop(void *) {
             break;
 
         case ServiceState::INITIALIZATION:
-            if constexpr (WEB_AUTH) web_server.add_handler(new WebAuthHandler());
+            if constexpr (WEB_AUTH) {
+                web_server.add_handler(new WebAuthHandler(WEBAUTH_USER, WEBAUTH_PASSWORD));
+            }
 
-            if constexpr (MQTT) mqtt_server.begin();
+            if constexpr (MQTT) mqtt_server.begin(MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD);
 
             api_server.begin(web_server);
             ws_server.begin(web_server);

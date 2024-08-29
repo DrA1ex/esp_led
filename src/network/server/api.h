@@ -3,7 +3,7 @@
 #include "constants.h"
 #include "app/application.h"
 
-#include "network/web.h"
+#include "lib/network/web.h"
 
 #include "utils/network.h"
 

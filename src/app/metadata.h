@@ -8,7 +8,9 @@
 #include <Arduino.h>
 
 #include "config.h"
-#include "network/enum.h"
+#include "network/cmd.h"
+
+#include "lib/base/application.h"
 
 MAKE_ENUM(NotificationProperty, uint8_t,
           POWER, 0,
@@ -22,23 +24,14 @@ MAKE_ENUM(NotificationProperty, uint8_t,
           NIGHT_MODE_BRIGHTNESS, 8
 )
 
-struct PropertyMetadata {
-    NotificationProperty property;
-    PacketType packet_type;
+using AppPropertyMetadata = PropertyMetadata<NotificationProperty, PacketType>;
 
-    uint8_t value_offset;
-    uint8_t value_size;
+extern std::map<PacketType, AppPropertyMetadata> PacketTypeMetadataMap;
+extern std::map<NotificationProperty, std::vector<AppPropertyMetadata>> PropertyMetadataMap;
+extern std::map<String, AppPropertyMetadata> TopicPropertyMetadata;
 
-    const char *mqtt_in_topic = nullptr;
-    const char *mqtt_out_topic = nullptr;
-};
+std::map<NotificationProperty, std::vector<AppPropertyMetadata>> _build_property_metadata_map(
+        std::map<PacketType, AppPropertyMetadata> &packetMapping);
 
-extern std::map<PacketType, PropertyMetadata> PacketTypeMetadataMap;
-extern std::map<NotificationProperty, std::vector<PropertyMetadata>> PropertyMetadataMap;
-extern std::map<String, PropertyMetadata> TopicPropertyMetadata;
-
-std::map<NotificationProperty, std::vector<PropertyMetadata>> _build_property_metadata_map(
-        std::map<PacketType, PropertyMetadata> &packetMapping);
-
-std::map<String, PropertyMetadata> _build_topic_property_metadata_map(
-        std::map<PacketType, PropertyMetadata> &packetMapping);
+std::map<String, AppPropertyMetadata> _build_topic_property_metadata_map(
+        std::map<PacketType, AppPropertyMetadata> &packetMapping);

@@ -1,7 +1,5 @@
 #include "wifi.h"
 
-#include "credentials.h"
-
 #ifdef ESP32
 
 #include <WiFi.h>
@@ -24,10 +22,12 @@
 #define __ID 0
 #endif
 
-#include "constants.h"
-#include "debug.h"
+#include "lib/debug.h"
 
-void WifiManager::connect(byte mode, unsigned long connection_interval) {
+WifiManager::WifiManager(const char *ssid, const char *password, unsigned long connection_check_interval) :
+        _ssid(ssid), _password(password), _connection_check_interval(connection_check_interval) {}
+
+void WifiManager::connect(WifiMode mode, unsigned long connection_interval) {
     if (_state == WifiManagerState::CONNECTING) return;
 
     WiFi.disconnect();
@@ -37,11 +37,11 @@ void WifiManager::connect(byte mode, unsigned long connection_interval) {
     _state = WifiManagerState::DISCONNECTED;
 
     switch (_mode) {
-        case 0u:
+        case WifiMode::AP:
             _connect_ap();
             break;
 
-        case 1u:
+        case WifiMode::STA:
             _connect_sta_step();
             break;
 
@@ -51,19 +51,19 @@ void WifiManager::connect(byte mode, unsigned long connection_interval) {
 
 void WifiManager::handle_connection() {
     if (_state == WifiManagerState::CONNECTING) {
-        if (_mode == WIFI_STA) _connect_sta_step();
+        if (_mode == WifiMode::STA) _connect_sta_step();
 
         return;
     }
 
-    if (millis() - _last_connection_check < WIFI_CONNECTION_CHECK_INTERVAL) return;
+    if (millis() - _last_connection_check < _connection_check_interval) return;
 
     _last_connection_check = millis();
     if (WiFi.getMode() == __WIFI_STA && !WiFi.isConnected()) {
         D_PRINT("Wi-Fi connection lost");
 
         _state = WifiManagerState::DISCONNECTED;
-        connect(WIFI_MODE);
+        connect(_mode);
     }
 }
 void WifiManager::_connect_ap() {
@@ -74,8 +74,8 @@ void WifiManager::_connect_ap() {
     String chip_id = String(__ID, HEX);
     chip_id.toUpperCase();
 
-    String ssid = String(WIFI_SSID) + "_" + chip_id;
-    WiFi.softAP(ssid, WIFI_PASSWORD);
+    String ssid = String(_ssid) + "_" + chip_id;
+    WiFi.softAP(ssid, _password);
 
     D_WRITE("Access point created: ");
     D_PRINT(ssid);
@@ -93,7 +93,7 @@ void WifiManager::_connect_sta_step() {
         D_PRINT("Connecting to Wi-Fi...");
 
         WiFi.mode(__WIFI_STA);
-        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+        WiFi.begin(_ssid, _password);
 
         _state = WifiManagerState::CONNECTING;
         _connection_begin_time = millis();
@@ -112,6 +112,6 @@ void WifiManager::_connect_sta_step() {
         D_PRINT("Wi-Fi connection interval exceeded. Switch to AP mode.");
 
         _state = WifiManagerState::DISCONNECTED;
-        connect(0);
+        connect(WifiMode::AP);
     }
 }

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <cctype>
+#include <cstdint>
+#include <type_traits>
 
-#include "debug.h"
+#include "../debug.h"
 
-template<typename T, size_t Size>
+template<typename T, size_t Size, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
 class CircularBuffer {
     T _buffer[Size] = {};
 

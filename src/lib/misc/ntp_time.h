@@ -4,7 +4,9 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 
-#include "sys_constants.h"
+#ifndef NTP_UPDATE_INTERVAL
+#define NTP_UPDATE_INTERVAL                     (24ul * 3600 * 1000)
+#endif
 
 class NtpTime {
     WiFiUDP _wifi_udp;

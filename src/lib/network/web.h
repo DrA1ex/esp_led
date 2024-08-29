@@ -3,8 +3,7 @@
 #include "ESPAsyncWebServer.h"
 #include "FS.h"
 
-#include "constants.h"
-#include "debug.h"
+#include "../debug.h"
 
 class WebServer {
     uint16_t _port;
@@ -26,9 +25,13 @@ public:
 
 class WebAuthHandler : public AsyncWebHandler {
 private:
-    bool _allow_local = true;
+    const char *_user;
+    const char *_password;
+    bool _allow_local;
 
 public:
+    WebAuthHandler(const char *user, const char *password, bool allow_local = true);
+
     inline void set_allow_local(bool value) { _allow_local = value; }
 
     virtual bool canHandle(AsyncWebServerRequest *request) override final;

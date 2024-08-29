@@ -1,20 +1,29 @@
 #pragma once
 
+#include "constants.h"
 #include "config.h"
 #include "metadata.h"
 #include "night_mode.h"
 
-#include "misc/event_topic.h"
-#include "misc/storage.h"
+#include "lib/misc/event_topic.h"
+#include "lib/misc/storage.h"
 
-class Application {
+class Application : public ApplicationAbstract<Config, AppPropertyMetadata> {
+    Config &_config;
+    EventTopic<NotificationProperty> _e_property_changed{};
+
 public:
     Storage<Config> &config_storage;
 
-    Config &config;
     NightModeManager &night_mode_manager;
 
-    EventTopic<NotificationProperty> e_property_changed{};
+
+    inline Config &config() override { return _config; }
+    inline const std::map<PacketEnumT, AppPropertyMetadata> &packet_meta() override { return PacketTypeMetadataMap; }
+    inline const std::map<NotificationProperty, std::vector<AppPropertyMetadata>> &property_meta() override { return PropertyMetadataMap; };
+    inline const std::map<String, AppPropertyMetadata> &topic_property_meta() override { return TopicPropertyMetadata; };
+
+    inline EventTopic<PropEnumT> &event_property_changed() override { return _e_property_changed; }
 
     unsigned long state_change_time = 0;
     AppState state = AppState::UNINITIALIZED;
@@ -33,8 +42,8 @@ public:
 
     void restart();
 
-    inline void notify_parameter_changed(void *sender, NotificationProperty param, void *arg = nullptr) {
-        e_property_changed.publish(sender, param, arg);
+    inline void notify_property_changed(void *sender, NotificationProperty param, void *arg = nullptr) override {
+        _e_property_changed.publish(sender, param, arg);
     }
 
 private:

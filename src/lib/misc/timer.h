@@ -1,6 +1,8 @@
 #pragma once
 
-#include "constants.h"
+#ifndef TIMER_GROW_AMOUNT
+#define TIMER_GROW_AMOUNT                       (8u)
+#endif
 
 typedef void (*TimerFn)(void *);
 

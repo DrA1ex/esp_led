@@ -1,12 +1,25 @@
 #pragma once
 
+#include <type_traits>
 #include <FS.h>
 
-#include "constants.h"
-#include "debug.h"
-#include "timer.h"
+#include "./timer.h"
+#include "../debug.h"
 
-template<typename T>
+#ifndef STORAGE_PATH
+#define STORAGE_PATH                            ("/__storage/")
+#endif
+#ifndef STORAGE_HEADER
+#define STORAGE_HEADER                          ((uint32_t) 0xd0c1f2c3)
+#endif
+#ifndef STORAGE_CONFIG_VERSION
+#define STORAGE_CONFIG_VERSION                  ((uint8_t) 1)
+#endif
+#ifndef STORAGE_SAVE_INTERVAL
+#define STORAGE_SAVE_INTERVAL                   (60000u)                // Wait before commit settings to FLASH
+#endif
+
+template<typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
 class Storage {
     FS *_fs = nullptr;
     Timer &_timer;
@@ -46,12 +59,12 @@ private:
 };
 
 
-template<typename T>
-Storage<T>::Storage(Timer &timer, const char *key, uint8_t version, uint32_t header) :
+template<typename T, typename _1>
+Storage<T, _1>::Storage(Timer &timer, const char *key, uint8_t version, uint32_t header) :
         _timer(timer), _key(key), _version(version), _header(header) {}
 
-template<typename T>
-void Storage<T>::begin(FS *fs) {
+template<typename T, typename _1>
+void Storage<T, _1>::begin(FS *fs) {
     _fs = fs;
 
     const String path = _get_path();
@@ -91,14 +104,14 @@ void Storage<T>::begin(FS *fs) {
     }
 }
 
-template<typename T>
-void Storage<T>::reset() {
+template<typename T, typename _1>
+void Storage<T, _1>::reset() {
     _data = T();
     save();
 }
 
-template<typename T>
-void Storage<T>::_commit_impl() {
+template<typename T, typename _1>
+void Storage<T, _1>::_commit_impl() {
     if (!_fs) return;
 
     File file = _fs->open(_get_path(), "r");
@@ -123,24 +136,24 @@ void Storage<T>::_commit_impl() {
     file.close();
 }
 
-template<typename T>
-bool Storage<T>::_check_header(File &file, uint32_t &out_header, uint8_t out_version) {
+template<typename T, typename _1>
+bool Storage<T, _1>::_check_header(File &file, uint32_t &out_header, uint8_t out_version) {
     file.read((uint8_t *) &out_header, sizeof(_header));
     file.read((uint8_t *) &out_version, sizeof(_version));
 
     return out_header == _header && out_version == _version;
 }
 
-template<typename T>
-bool Storage<T>::_check_header(File &file) {
+template<typename T, typename _1>
+bool Storage<T, _1>::_check_header(File &file) {
     decltype(_header) saved_header{};
     decltype(_version) saved_version{};
 
     return _check_header(file, saved_header, saved_version);
 }
 
-template<typename T>
-void Storage<T>::save() {
+template<typename T, typename _1>
+void Storage<T, _1>::save() {
     if (!_fs) return;
 
     if (_save_timer_id != -1) {
@@ -156,8 +169,8 @@ void Storage<T>::save() {
     }, STORAGE_SAVE_INTERVAL, this);
 }
 
-template<typename T>
-void Storage<T>::force_save() {
+template<typename T, typename _1>
+void Storage<T, _1>::force_save() {
     if (_save_timer_id != -1) {
         D_PRINTF("Storage(%s): Clear existing Storage save timer\n", _key);
 
@@ -167,8 +180,8 @@ void Storage<T>::force_save() {
     _commit_impl();
 }
 
-template<typename T>
-bool Storage<T>::_check_changed(File &file) {
+template<typename T, typename _1>
+bool Storage<T, _1>::_check_changed(File &file) {
     if (file.size() != size() || !_check_header(file)) return true;
 
     auto *ptr = (uint8_t *) &_data;

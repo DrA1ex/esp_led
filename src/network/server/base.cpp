@@ -1,6 +1,6 @@
 #include "base.h"
 
-#include "application.h"
+#include "app/application.h"
 
 ServerBase::ServerBase(Application &app) : _app(app), _protocol() {}
 

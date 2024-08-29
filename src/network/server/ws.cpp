@@ -2,8 +2,8 @@
 
 #include <functional>
 
-#include "application.h"
 #include "debug.h"
+#include "app/application.h"
 
 
 WebSocketServer::WebSocketServer(Application &app, const char *path) : ServerBase(app), _path(path), _ws(path) {}

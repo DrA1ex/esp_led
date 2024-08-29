@@ -4,9 +4,9 @@
 #include <memory.h>
 #include <type_traits>
 
-#include "config.h"
 #include "constants.h"
 #include "debug.h"
+#include "app/config.h"
 #include "network/protocol/type.h"
 
 class BinaryProtocol {

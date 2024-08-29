@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.h"
+#include "app/config.h"
 
 #include "network/protocol/binary.h"
 #include "network/protocol/type.h"

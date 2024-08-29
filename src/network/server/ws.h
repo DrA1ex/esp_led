@@ -4,7 +4,7 @@
 #include <AsyncWebSocket.h>
 
 #include "base.h"
-#include "metadata.h"
+#include "app/metadata.h"
 #include "misc/circular_buffer.h"
 #include "network/web.h"
 

@@ -2,10 +2,11 @@
 #include <ArduinoOTA.h>
 #include <LittleFS.h>
 
-#include "application.h"
-#include "config.h"
 #include "debug.h"
-#include "night_mode.h"
+
+#include "app/config.h"
+#include "app/application.h"
+#include "app/night_mode.h"
 
 #include "misc/event_topic.h"
 #include "misc/ntp_time.h"

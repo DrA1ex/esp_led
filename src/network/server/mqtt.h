@@ -1,6 +1,6 @@
 #include <AsyncMqttClient.h>
 
-#include "application.h"
+#include "app/application.h"
 
 enum class MqttServerState : uint8_t {
     UNINITIALIZED,

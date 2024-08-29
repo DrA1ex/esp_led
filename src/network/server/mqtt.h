@@ -25,10 +25,6 @@ public:
 
     void handle_connection();
 
-    void notify_brightness(uint16_t value);
-    void notify_power(bool value);
-    void notify_color(uint32_t value);
-
 protected:
     void _on_connect(bool sessionPresent);
     void _on_disconnect(AsyncMqttClientDisconnectReason reason);
@@ -37,8 +33,15 @@ protected:
     void _subscribe(const char *topic, uint8_t qos);
     void _publish(const char *topic, uint8_t qos, const char *payload, size_t length);
 
+    void _process_message(const String &topic, const String &payload);
+    void _process_notification(NotificationProperty prop);
+
     void _change_state(MqttServerState state);
     void _connect();
+
+    template<typename T>
+    void _set_value(PropertyMetadata meta, const T &value);
+
+    template<typename T>
+    void _notify_value_changed(PropertyMetadata meta);
 };
-
-

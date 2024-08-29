@@ -3,6 +3,8 @@
 #include "credentials.h"
 #include "sys_constants.h"
 
+#include "app/metadata.h"
+
 #include "utils/math.h"
 
 MqttServer::MqttServer(Application &app) : _app(app) {}
@@ -19,20 +21,9 @@ void MqttServer::begin() {
     _mqttClient.setServer(MQTT_HOST, MQTT_PORT);
     _mqttClient.setCredentials(MQTT_USER, MQTT_PASSWORD);
 
-    _app.e_property_changed.subscribe(this, NotificationProperty::POWER,
-                                      [this](auto sender, auto, auto) {
-                                          notify_power(_app.config.power);
-                                      });
-
-    _app.e_property_changed.subscribe(this, NotificationProperty::BRIGHTNESS,
-                                      [this](auto sender, auto, auto) {
-                                          notify_brightness(_app.config.brightness);
-                                      });
-
-    _app.e_property_changed.subscribe(this, NotificationProperty::COLOR,
-                                      [this](auto sender, auto, auto) {
-                                          notify_color(_app.config.color);
-                                      });
+    _app.e_property_changed.subscribe(this, [this](auto, auto prop, auto) {
+        _process_notification(prop);
+    });
 
     _connect();
 }
@@ -64,7 +55,7 @@ void MqttServer::handle_connection() {
     }
 }
 
-void MqttServer::_on_connect(bool sessionPresent) {
+void MqttServer::_on_connect(bool) {
     D_PRINT("MQTT Connected");
 
     _subscribe(MQTT_TOPIC_BRIGHTNESS, 1);
@@ -86,64 +77,14 @@ void MqttServer::_on_message(char *topic, char *payload, AsyncMqttClientMessageP
     D_PRINTF("MQTT Received: %s: \"%.*s\"\n", topic, len, payload);
 
     String topic_str(topic);
-
     String payload_str{};
     payload_str.concat(payload, len);
 
-    if (topic_str == MQTT_TOPIC_BRIGHTNESS) {
-        uint16_t value;
-
-        if constexpr (MQTT_CONVERT_BRIGHTNESS) {
-            value = map16(payload_str.toInt(), 100, DAC_MAX_VALUE);
-        } else {
-            value = payload_str.toInt();
-        }
-
-        D_PRINTF("Set brightness %u\n", value);
-
-        _app.config.brightness = value;
-        _app.load();
-
-        _app.e_property_changed.publish(this, NotificationProperty::BRIGHTNESS);
-    } else if (topic_str == MQTT_TOPIC_POWER) {
-        bool value = payload_str == "1";
-        D_PRINTF("Set power %u\n", value);
-
-        _app.set_power(value);
-        _app.e_property_changed.publish(this, NotificationProperty::POWER);
-    } else if (topic_str == MQTT_TOPIC_COLOR) {
-        uint32_t value = payload_str.toInt();
-
-        D_WRITE("Set color: ");
-        D_PRINT_HEX(((uint8_t * )(&value)), sizeof(value));
-
-        _app.config.color = value;
-        _app.load();
-
-        _app.e_property_changed.publish(this, NotificationProperty::COLOR);
-    }
-}
-
-void MqttServer::notify_brightness(uint16_t value) {
-    String value_str;
-
-    if constexpr (MQTT_CONVERT_BRIGHTNESS) {
-        auto converted = map16(value, DAC_MAX_VALUE, 100);
-        value_str = String(converted);
-    } else {
-        value_str = String(value);
+    if (MQTT_CONVERT_BRIGHTNESS && topic_str == MQTT_TOPIC_BRIGHTNESS) {
+        payload_str = map16(payload_str.toInt(), 100, DAC_MAX_VALUE);
     }
 
-    _publish(MQTT_OUT_TOPIC_BRIGHTNESS, 1, value_str.c_str(), value_str.length());
-}
-
-void MqttServer::notify_power(bool value) {
-    _publish(MQTT_OUT_TOPIC_POWER, 1, value ? "1" : "0", 1);
-}
-
-void MqttServer::notify_color(uint32_t value) {
-    String value_str = String(value);
-    _publish(MQTT_OUT_TOPIC_COLOR, 1, value_str.c_str(), value_str.length());
+    _process_message(topic_str, payload_str);
 }
 
 void MqttServer::_subscribe(const char *topic, uint8_t qos) {
@@ -160,4 +101,96 @@ void MqttServer::_publish(const char *topic, uint8_t qos, const char *payload, s
     _mqttClient.publish(topic, qos, true, payload, length);
 
     D_PRINTF("MQTT Publish: %s: \"%.*s\"\n", topic, length, payload);
+}
+
+void MqttServer::_process_message(const String &topic, const String &payload) {
+    auto iter_meta = TopicPropertyMetadata.find(topic);
+    if (iter_meta == TopicPropertyMetadata.end()) {
+        D_PRINTF("MQTT: Message in unsupported topic: %s\n", topic.c_str());
+        return;
+    }
+
+    const auto meta = iter_meta->second;
+    switch (meta.value_size) {
+        case 8:
+            _set_value(meta, (uint64_t) payload.toInt());
+            break;
+
+        case 4:
+            _set_value(meta, (uint32_t) payload.toInt());
+            break;
+
+        case 2:
+            _set_value(meta, (uint16_t) payload.toInt());
+            break;
+
+        case 1:
+            _set_value(meta, (uint8_t) payload.toInt());
+            break;
+
+        default:
+            D_PRINTF("MQTT: Unsupported value size: %u. topic: %s\n", meta.value_size, topic.c_str());
+            return;
+    }
+
+    if (topic == MQTT_TOPIC_POWER) {
+        _app.set_power(_app.config.power);
+    } else {
+        _app.load();
+    }
+
+    _app.e_property_changed.publish(this, meta.property);
+}
+
+void MqttServer::_process_notification(NotificationProperty prop) {
+    auto iter_meta = PropertyMetadataMap.find(prop);
+    if (iter_meta == PropertyMetadataMap.end()) return;
+
+    const auto meta = iter_meta->second[0];
+    if (meta.mqtt_out_topic == nullptr) return;
+
+    D_PRINTF("MQTT: Processing notification for %s\n", __debug_enum_str(prop));
+
+    switch (meta.value_size) {
+        case 8:
+            _notify_value_changed<uint64_t>(meta);
+            break;
+
+        case 4:
+            _notify_value_changed<uint32_t>(meta);
+            break;
+
+        case 2:
+            _notify_value_changed<uint16_t>(meta);
+            break;
+
+        case 1:
+            _notify_value_changed<uint8_t>(meta);
+            break;
+
+        default:
+            D_PRINTF("MQTT: Unsupported value size: %u\n", meta.value_size);
+            return;
+    }
+}
+
+template<typename T>
+void MqttServer::_notify_value_changed(PropertyMetadata meta) {
+    T value;
+    memcpy(&value, (uint8_t *) &_app.config + meta.value_offset, sizeof(value));
+
+    if (MQTT_CONVERT_BRIGHTNESS && meta.property == NotificationProperty::BRIGHTNESS) {
+        value = map16(value, DAC_MAX_VALUE, 100);
+    }
+
+    auto value_str = String(value);
+    _publish(meta.mqtt_out_topic, 1, value_str.c_str(), value_str.length());
+}
+
+template<typename T>
+void MqttServer::_set_value(PropertyMetadata meta, const T &value) {
+    memcpy((uint8_t *) &_app.config + meta.value_offset, &value, sizeof(value));
+
+    D_PRINTF("Set %s = ", __debug_enum_str(meta.property));
+    D_PRINT_HEX(((uint8_t *) (&value)), sizeof(value));
 }

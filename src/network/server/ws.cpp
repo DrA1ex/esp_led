@@ -58,7 +58,7 @@ void WebSocketServer::on_event(AsyncWebSocket *,
             break;
 
         case WS_EVT_DATA: {
-            D_PRINTF("Received WebSocket packet, size: %u\n", len);
+            D_PRINTF("WebSocket received packet, size: %u\n", len);
 
             if (len == 0) {
                 _send_response(client->id(), 0, Response::code(ResponseCode::PACKET_LENGTH_EXCEEDED));
@@ -66,13 +66,13 @@ void WebSocketServer::on_event(AsyncWebSocket *,
             }
 
             if (len > WS_MAX_PACKET_SIZE) {
-                D_PRINTF("Packet dropped. Max packet size %ui\n, but received %ul", WS_MAX_PACKET_SIZE, len);
+                D_PRINTF("WebSocket packet dropped. Max packet size %ui\n, but received %ul", WS_MAX_PACKET_SIZE, len);
                 _send_response(client->id(), 0, Response::code(ResponseCode::PACKET_LENGTH_EXCEEDED));
                 return;
             }
 
             if (!_request_queue.can_acquire()) {
-                D_PRINT("Packet dropped. Queue is full");
+                D_PRINT("WebSocket packet dropped. Queue is full");
                 _send_response(client->id(), 0, Response::code(ResponseCode::TOO_MANY_REQUEST));
                 return;
             }
@@ -101,7 +101,7 @@ void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const 
     (*(PacketHeader *) message) = PacketHeader{PACKET_SIGNATURE, 0, type, size};
     mempcpy(message + sizeof(PacketHeader), data, size);
 
-    D_PRINTF("Send message total size: %u (data size: %u)\n", sizeof(message), size);
+    D_PRINTF("WebSocket send message total size: %u (data size: %u)\n", sizeof(message), size);
 
     for (auto &client: _ws.getClients()) {
         if (sender_id == client->id()) continue;
@@ -112,7 +112,7 @@ void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const 
 
 template<typename T>
 void WebSocketServer::notify_clients(uint32_t sender_id, PacketType type, const T &value) {
-    D_PRINTF("Send value message size: %u\n", sizeof(value));
+    D_PRINTF("WebSocket send value message size: %u\n", sizeof(value));
 
     notify_clients(sender_id, type, &value, sizeof(value));
 }
@@ -140,7 +140,7 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
 
         case ResponseType::BINARY:
             if (response.body.buffer.size > 255) {
-                D_PRINTF("Response size too long: %u", response.body.buffer.size);
+                D_PRINTF("WebSocket response size too long: %u", response.body.buffer.size);
                 return _send_response(client_id, request_id, Response::code(ResponseCode::INTERNAL_ERROR));
             }
 
@@ -150,7 +150,7 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
             break;
 
         default:
-            D_PRINTF("Unknown response type %u", (uint8_t) response.type);
+            D_PRINTF("WebSocket unknown response type %u", (uint8_t) response.type);
             return _send_response(client_id, request_id, Response::code(ResponseCode::INTERNAL_ERROR));
     }
 
@@ -165,7 +165,7 @@ void WebSocketServer::_send_response(uint32_t client_id, uint16_t request_id, co
 void WebSocketServer::_handle_notification(void *, NotificationProperty type, void *arg) {
     auto prop_iterator = PropertyMetadataMap.find(type);
     if (prop_iterator == PropertyMetadataMap.end()) {
-        D_PRINTF("Unsupported notification type %s\n", __debug_enum_str(type));
+        D_PRINTF("WebSocket unsupported notification type %s\n", __debug_enum_str(type));
         return;
     }
 
@@ -174,7 +174,7 @@ void WebSocketServer::_handle_notification(void *, NotificationProperty type, vo
 
     const auto &meta = prop[0];
 
-    D_PRINTF("Preparing notification data for %s, size: %u, offset: %u\n",
+    D_PRINTF("WebSocket preparing notification data for %s, size: %u, offset: %u\n",
              __debug_enum_str(type), meta.value_size, meta.value_offset);
 
     // Copy data to avoid unaligned memory access
@@ -185,7 +185,7 @@ void WebSocketServer::_handle_notification(void *, NotificationProperty type, vo
         notify_clients(client_id, meta.packet_type, data, meta.value_size);
     } else {
         if (meta.value_size != 1) {
-            D_PRINTF("Unsupported notification for trigger type %s. Expected size 1 byte, but got %u\n",
+            D_PRINTF("WebSocket unsupported notification for trigger type %s. Expected size 1 byte, but got %u\n",
                      __debug_enum_str(type), meta.value_size);
             return;
         }

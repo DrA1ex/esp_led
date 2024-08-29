@@ -1,11 +1,18 @@
 # esp-led
 Smart RGB/LED Control for ESP32/ESP8266
 
-![esp_led local_(iPhone XR)](https://github.com/user-attachments/assets/ed7e8e77-52eb-44dc-898a-b081195702f2)
+![image](https://github.com/user-attachments/assets/fa4d4f01-f9f8-494a-b6f1-6a08406da38b)
+
+## Features
+- Support for both White and RGB Lamp (or LED-Strip)
+- Web/Mobile Application (PWA)
+- Integration with any Smart Home Assistant (such as Alise) via MQTT broker
+- Web Hooks
+- MQTT Protocol
 
 ## Connection
 
-<img width="704" alt="image" src="https://github.com/user-attachments/assets/6d57e383-b652-46b2-81fa-6e31082bcb49">
+![image](https://github.com/user-attachments/assets/793dc957-1312-4eb5-bbee-432d5c9db3fc)
 
 This is a basic connection scheme. You can use any pin for the connection (just change it in `constants.h`).
 

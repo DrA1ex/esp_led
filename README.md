@@ -16,7 +16,9 @@ Smart RGB/LED Control for ESP32/ESP8266
 
 This is a basic connection scheme. You can use any pin for the connection (just change it in `constants.h`).
 
-I recommend connecting the MOSFET to the controller using a 200-ohm resistor to protect the controller pin. Additionally, connect the MOSFET's gate to GND with a 10k-ohm resistor to prevent unwanted activation from induced current.
+To safeguard your controller, I recommend connecting a 200-ohm resistor between the MOSFET and the controller pin. Additionally, connect the MOSFET's gate to GND using a 10k-ohm resistor to prevent unwanted activation due to induced currents.
+
+For RGB connections, the setup is similar, but you will need three separate MOSFETs for each color channel.
 
 ## Installation
 
@@ -38,3 +40,13 @@ PLATFORM=esp32-c3 ./upload_fs.sh
 pio run -t upload -e esp8266-release
 PLATFORM=esp8266 ./upload_fs.sh
 ```
+
+## MQTT Protocol
+
+| Topic In *       			| Topic Out *          			| Type        | Values		         | Comments                              |
+|---------------------------|-------------------------------|-------------|----------------------|---------------------------------------|
+| `MQTT_TOPIC_POWER`		| `MQTT_OUT_TOPIC_POWER` 		| `uint8_t`   | 0..1      	     	 | Power state: ON (1) / OFF (0)         |
+| `MQTT_TOPIC_BRIGHTNESS`	| `MQTT_OUT_TOPIC_BRIGHTNESS` 	| `uint8_t`   | 0..`DAC_MAX_VALUE`   | Brightness level, can switch to 0..100 (`MQTT_CONVERT_BRIGHTNESS`) 	|
+| `MQTT_TOPIC_COLOR`		| `MQTT_OUT_TOPIC_COLOR` 		| `uint32_t`  | 0..0xFFFFFF  		 | Color value (ARGB or RGB format)      |
+
+\* Actual topic values decalred in `constants.h`

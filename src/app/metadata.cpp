@@ -46,7 +46,8 @@ std::map<PacketType, AppPropertyMetadata> PacketTypeMetadataMap = {
                 PacketType::NIGHT_MODE_ENABLED,
                 {
                         NotificationProperty::NIGHT_MODE_ENABLED,    PacketType::NIGHT_MODE_ENABLED,
-                        offsetof(Config, night_mode.enabled),         sizeof(Config::night_mode.enabled)
+                        offsetof(Config, night_mode.enabled),         sizeof(Config::night_mode.enabled),
+                        MQTT_TOPIC_NIGHT_MODE, MQTT_OUT_TOPIC_NIGHT_MODE,
                 }
         },
         {

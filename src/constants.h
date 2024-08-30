@@ -40,8 +40,10 @@
 #define MQTT_TOPIC_BRIGHTNESS                   MQTT_PREFIX "/brightness"
 #define MQTT_TOPIC_POWER                        MQTT_PREFIX "/power"
 #define MQTT_TOPIC_COLOR                        MQTT_PREFIX "/color"
+#define MQTT_TOPIC_NIGHT_MODE                   MQTT_PREFIX "/night_mode"
 
 #define MQTT_OUT_PREFIX                         MQTT_PREFIX "/out"
 #define MQTT_OUT_TOPIC_BRIGHTNESS               MQTT_OUT_PREFIX "/brightness"
 #define MQTT_OUT_TOPIC_POWER                    MQTT_OUT_PREFIX "/power"
 #define MQTT_OUT_TOPIC_COLOR                    MQTT_OUT_PREFIX "/color"
+#define MQTT_OUT_TOPIC_NIGHT_MODE               MQTT_OUT_PREFIX "/night_mode"

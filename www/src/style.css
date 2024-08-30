@@ -331,6 +331,10 @@ h3 {
     display: none;
 }
 
+.input[type="color"][data-loading="true"]::-webkit-color-swatch-wrapper {
+    display: none;
+}
+
 input[type="color"]::-webkit-color-swatch-wrapper {
     padding: 0.25rem;
     border: none;

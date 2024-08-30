@@ -12,7 +12,7 @@ npm run build || (echo "Failed" && exit 2)
 cd ..
 
 echo "Compress..."
-gzip -9 ./data/*
+gzip -9 -r ./data/*
 
 echo "Uploading..."
 echo "*** Platform: ${PLATFORM} ***"

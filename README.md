@@ -50,3 +50,52 @@ PLATFORM=esp8266 ./upload_fs.sh
 | `MQTT_TOPIC_COLOR`		| `MQTT_OUT_TOPIC_COLOR` 		| `uint32_t`  | 0..0xFFFFFF  		 | Color value (ARGB or RGB format)      |
 
 \* Actual topic values decalred in `constants.h`
+
+
+## Misc
+
+### Configuring a Secure WebSocket Proxy with Nginx
+
+If you're hosting a Web UI that uses SSL, you'll need to set up a Secure WebSocket (`wss://...`) server instead of the non-secure `ws://` provided by your ESP. Browsers require secure socket connections for WebSocket functionality, so this configuration is essential.
+
+To achieve this, you can use Nginx as a proxy to create an SSL-enabled WebSocket connection.
+
+#### Step 0: Install Nginx
+
+```sh
+apt install nginx
+```
+
+#### Step 1: Create the Nginx Configuration
+
+Create a file at `/etc/nginx/conf.d/ws.locations` and add the following content:
+
+```nginx
+location /w_esp_led/ws {
+    proxy_pass http://<YOUR-ESP-IP-HERE_1>/ws; # Replace with your actual service address
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection keep-alive;
+    proxy_set_header Host $host;
+}
+
+# You can create proxy for multiple hosts
+location /w_esp_led_2/ws {
+    proxy_pass http://<YOUR-ESP-IP-HERE_2>/ws; # Replace with your actual service address
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection keep-alive;
+    proxy_set_header Host $host;
+}
+```
+
+#### Step 2: Reload the Nginx Configuration
+
+After saving the configuration file, reload Nginx to apply the changes:
+
+```sh
+nginx -s reload
+```
+
+**Note**
+Make sure to replace `<YOUR-ESP-IP-HERE_1>` and `<YOUR-ESP-IP-HERE_2>` with the actual IP addresses of your ESP devices.

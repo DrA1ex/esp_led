@@ -15,7 +15,6 @@ import {BinaryParser} from "./misc/binary_parser.js";
 import {WebSocketInteraction} from "./network/ws.js";
 
 import * as FunctionUtils from "./utils/function.js"
-import {PacketType} from "./network/cmd.js";
 
 if ("serviceWorker" in navigator) {
     try {
@@ -181,6 +180,9 @@ function initUi() {
                     control = new ButtonControl(document.createElement("a"));
                     control.addClass("m-top");
                     control.setLabel(prop.label);
+                    break;
+
+                case "skip":
                     break;
 
                 default:

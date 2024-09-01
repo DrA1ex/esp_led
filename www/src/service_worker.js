@@ -37,7 +37,11 @@ async function _fetch(event) {
 }
 
 async function _cacheFetch(cache, request) {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request).catch((e) => {
+        console.error("Network request failed");
+        return {ok: false, error: e};
+    });
+
     if (!networkResponse.ok) return networkResponse;
 
     const cacheMatch = await cache.match(request);

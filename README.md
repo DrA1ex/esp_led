@@ -103,4 +103,4 @@ Make sure to replace `<YOUR-ESP-IP-HERE_1>` and `<YOUR-ESP-IP-HERE_2>` with the 
 
 #### Step 3: Check result
 
-Open WebUi in browser `https://<example.com>/esp-led/?host=<example.com>/w_esp_led`
+Open WebUi in browser https://dra1ex.github.io/esp_led/?host=ADDRESS/w_esp_led

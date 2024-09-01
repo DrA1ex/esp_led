@@ -1,6 +1,6 @@
 import {AppConfigBase} from "./lib/index.js";
 
-import {Properties} from "./props.js";
+import {PropertyConfig} from "./props.js";
 import {PacketType} from "./cmd.js";
 
 
@@ -13,7 +13,7 @@ export class Config extends AppConfigBase {
     nightMode;
 
     constructor() {
-        super(Properties);
+        super(PropertyConfig);
     }
 
     get cmd() {return PacketType.GET_CONFIG;}

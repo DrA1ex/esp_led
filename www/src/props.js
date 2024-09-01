@@ -24,16 +24,3 @@ export const PropertyConfig = [{
         {key: "nightMode.switchInterval", title: "Switch Interval", type: "time", kind: "Uint16", cmd: PacketType.NIGHT_MODE_INTERVAL},
     ]
 }];
-
-export const Properties = PropertyConfig.reduce((res, section) => {
-    for (const prop of section.props) {
-        if (res[prop.key]) {
-            console.warn(`Key ${prop.key} already exist`);
-            continue;
-        }
-
-        res[prop.key] = prop;
-    }
-
-    return res;
-}, {});

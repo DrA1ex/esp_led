@@ -410,7 +410,7 @@ declare module "application.js" {
         abstract get cmd(): number;
         abstract parse(parser: BinaryParser): void;
 
-        protected constructor(propertyMap: PropertyConfigMap);
+        protected constructor(propertyConfig: PropertiesConfig);
 
         get propertyMap(): PropertyConfigMap;
 

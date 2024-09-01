@@ -24,26 +24,34 @@ async function _install() {
 async function _fetch(event) {
     const cache = await caches.open(CACHE_KEY);
 
-    const networkResponse = _cacheFetch(cache, event.request);
-    const cachedResponse = await cache.match(event.request);
+    const networkResponse = await _cacheFetch(cache, event.request);
+    if (networkResponse?.ok) return networkResponse;
 
+    const cachedResponse = await cache.match(event.request);
     if (cachedResponse?.ok) {
-        event.waitUntil(networkResponse);
         console.log("Get from cache:", cachedResponse.url);
         return cachedResponse;
-    } else {
-        return await networkResponse;
     }
+
+    return networkResponse;
 }
 
 async function _cacheFetch(cache, request) {
     const networkResponse = await fetch(request);
+    if (!networkResponse.ok) return networkResponse;
 
-    if (networkResponse.ok) {
-        console.log("Update cache:", request.url);
-        await cache.put(request, networkResponse.clone());
+    const cacheMatch = await cache.match(request);
+    if (cacheMatch) {
+        const cachedLastModified = cacheMatch.headers.get('Last-Modified');
+        const networkLastModified = networkResponse.headers.get('Last-Modified');
+
+        if (networkLastModified && (!cachedLastModified || new Date(networkLastModified) > new Date(cachedLastModified))) {
+            console.log("Update cache:", request.url);
+            await cache.put(request, networkResponse.clone());
+        }
     } else {
-        console.log("Failed to update cache:", networkResponse.statusText);
+        console.log("Caching new response:", request.url);
+        await cache.put(request, networkResponse.clone());
     }
 
     return networkResponse;

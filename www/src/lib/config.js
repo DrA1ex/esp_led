@@ -34,12 +34,23 @@ export class AppConfigBase extends EventEmitter {
     parse(parser) { throw new Error("Not implemented"); }
 
     /**
-     * @param {PropertyConfigMap} propertyMap
+     * @param {PropertiesConfig} propertyConfig
      */
-    constructor(propertyMap) {
+    constructor(propertyConfig) {
         super();
 
-        this.#propertyMap = propertyMap;
+        this.#propertyMap = propertyConfig.reduce((res, section) => {
+            for (const prop of section.props) {
+                if (res[prop.key]) {
+                    console.warn(`Key ${prop.key} already exist`);
+                    continue;
+                }
+
+                res[prop.key] = prop;
+            }
+
+            return res;
+        }, {});
     }
 
     /**

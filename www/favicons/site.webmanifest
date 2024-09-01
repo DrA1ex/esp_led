@@ -32,6 +32,6 @@
     "background_color": "#2d89ef",
     "orientation": "portrait-primary",
     "start_url": ".",
-    "display": "standalone",
+    "display": "fullscreen",
     "display_override": ["fullscreen", "minimal-ui"]
 }

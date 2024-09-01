@@ -1,4 +1,4 @@
-import {PacketType} from "./cmd.js";
+import {SystemPacketType} from "./cmd.js";
 import {Packet} from "./packet.js";
 import {EventEmitter} from "../misc/event_emitter.js";
 
@@ -8,7 +8,7 @@ import {
     CONNECTION_TIMEOUT_DELAY_STEP,
     CONNECTION_CLOSE_TIMEOUT,
     CONNECTION_TIMEOUT_MAX_DELAY
-} from "../constants.js";
+} from "../../constants.js";
 
 /**
  * @enum {string}
@@ -24,11 +24,13 @@ const WebSocketState = {
 const MAX_REQUEST_ID = 2 ** 16 - 1;
 
 export class WebSocketInteraction extends EventEmitter {
-    static CONNECTED = "ws_interaction_connected";
-    static DISCONNECTED = "ws_interaction_disconnected";
-    static ERROR = "ws_interaction_error";
-    static MESSAGE = "ws_interaction_message";
-    static NOTIFICATION = "ws_interaction_notification";
+    static Event = {
+        Connected: "ws_interaction_connected",
+        Disconnected: "ws_interaction_disconnected",
+        Error: "ws_interaction_error",
+        Message: "ws_interaction_message",
+        Notification: "ws_interaction_notification",
+    }
 
     #id = 0;
     #request_id = 1; // 0 - Reserved for notifications
@@ -83,9 +85,11 @@ export class WebSocketInteraction extends EventEmitter {
     }
 
     /**
-     * @param {PacketType} cmd
+     * @param {CmdEnumT} cmd
      * @param {ArrayBuffer} [buffer=null]
      * @returns {Promise<ArrayBuffer|*>}
+     *
+     * @template CmdEnumT
      */
     async request(cmd, buffer = null) {
         if (!this.connected) {
@@ -150,13 +154,13 @@ export class WebSocketInteraction extends EventEmitter {
         this.#reconnectionTimeout = 0;
         console.log(`#${this.#ws.__id}: WebSocket connection established`);
 
-        this.emitEvent(WebSocketInteraction.CONNECTED);
+        this.emitEvent(WebSocketInteraction.Event.Connected);
     }
 
     #onError(e) {
         console.error(`#${this.#ws.__id}: WebSocket error`, e);
 
-        this.emitEvent(WebSocketInteraction.ERROR, e);
+        this.emitEvent(WebSocketInteraction.Event.Error, e);
         this.#closeConnection();
     }
 
@@ -171,7 +175,7 @@ export class WebSocketInteraction extends EventEmitter {
             return;
         }
 
-        this.emitEvent(WebSocketInteraction.MESSAGE, e);
+        this.emitEvent(WebSocketInteraction.Event.Message, e);
 
         if (e.data instanceof Blob) {
             const buffer = await e.data.arrayBuffer()
@@ -190,7 +194,7 @@ export class WebSocketInteraction extends EventEmitter {
             if (packet.requestId === 0) {
                 console.log("Received notification of type", packet.type);
 
-                return this.emitEvent(WebSocketInteraction.NOTIFICATION, packet);
+                return this.emitEvent(WebSocketInteraction.Event.Notification, packet);
             } else if (!(packet.requestId in this.#requestMap)) {
                 return console.error(`Websocket unknown requestId: ${packet.requestId}`, packet);
             }
@@ -202,7 +206,7 @@ export class WebSocketInteraction extends EventEmitter {
         const request = this.#requestMap[packet.requestId];
 
         try {
-            if (packet.type === PacketType.RESPONSE_STRING) {
+            if (packet.type === SystemPacketType.RESPONSE_STRING) {
                 const str = packet.parseString();
                 if (str !== "OK") return request.reject(str);
             }
@@ -225,7 +229,7 @@ export class WebSocketInteraction extends EventEmitter {
             this.#reconnectionTimeout = 0;
         }
 
-        this.emitEvent(WebSocketInteraction.DISCONNECTED);
+        this.emitEvent(WebSocketInteraction.Event.Disconnected);
     }
 
     #cleanUpSocket() {

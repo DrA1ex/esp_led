@@ -1,12 +1,14 @@
-import {PacketType} from "./network/cmd.js";
-import {BinaryParser} from "./misc/binary_parser.js";
-import {EventEmitter} from "./misc/event_emitter.js";
+import {PacketType} from "./cmd.js";
+import {BinaryParser} from "./lib/misc/binary_parser.js";
+import {EventEmitter} from "./lib/misc/event_emitter.js";
 import {Properties} from "./props.js";
 
 
 export class Config extends EventEmitter {
-    static LOADED = "config_loaded";
-    static PROPERTY_CHANGED = "config_prop_changed";
+    static Event = {
+        Loaded: "config_loaded",
+        PropertyChanged: "config_prop_changed",
+    }
 
     #ws;
 
@@ -44,7 +46,7 @@ export class Config extends EventEmitter {
             switchInterval: parser.readUint16(),
         };
 
-        this.emitEvent(Config.LOADED);
+        this.emitEvent(Config.Event.Loaded);
     }
 
     getProperty(key) {
@@ -67,7 +69,7 @@ export class Config extends EventEmitter {
         const oldValue = this.getProperty(key);
         this.#setProperty(key, value);
 
-        if (sendNotification) this.emitEvent(Config.PROPERTY_CHANGED, {key, value, oldValue});
+        if (sendNotification) this.emitEvent(Config.Event.PropertyChanged, {key, value, oldValue});
     }
 
     #setProperty(key, value) {

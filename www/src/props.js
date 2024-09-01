@@ -1,4 +1,4 @@
-import {PacketType} from "./network/cmd.js";
+import {PacketType} from "./cmd.js";
 
 export const PropertyConfig = [{
     key: "general", section: "General", props: [

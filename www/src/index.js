@@ -3,18 +3,18 @@ import {Properties, PropertyConfig} from "./props.js";
 import {CONNECTION_TIMEOUT_DELAY_STEP, DEFAULT_ADDRESS, THROTTLE_INTERVAL} from "./constants.js";
 
 
-import {TriggerControl} from "./control/trigger.js";
-import {FrameControl} from "./control/frame.js";
-import {TextControl} from "./control/text.js";
-import {WheelControl} from "./control/wheel.js";
-import {SelectControl} from "./control/select.js";
-import {ButtonControl} from "./control/button.js";
-import {InputControl, InputType} from "./control/input.js";
+import {TriggerControl} from "./lib/control/trigger.js";
+import {FrameControl} from "./lib/control/frame.js";
+import {TextControl} from "./lib/control/text.js";
+import {WheelControl} from "./lib/control/wheel.js";
+import {SelectControl} from "./lib/control/select.js";
+import {ButtonControl} from "./lib/control/button.js";
+import {InputControl, InputType} from "./lib/control/input.js";
 
-import {BinaryParser} from "./misc/binary_parser.js";
-import {WebSocketInteraction} from "./network/ws.js";
+import {BinaryParser} from "./lib/misc/binary_parser.js";
+import {WebSocketInteraction} from "./lib/network/ws.js";
 
-import * as FunctionUtils from "./utils/function.js"
+import * as FunctionUtils from "./lib/utils/function.js"
 
 if ("serviceWorker" in navigator) {
     try {
@@ -41,7 +41,7 @@ initUi();
 const ws = new WebSocketInteraction(gateway);
 let initialized = false;
 
-ws.subscribe(this, WebSocketInteraction.CONNECTED, async () => {
+ws.subscribe(this, WebSocketInteraction.Event.Connected, async () => {
     try {
         if (!initialized) {
             await initialize();
@@ -59,12 +59,12 @@ ws.subscribe(this, WebSocketInteraction.CONNECTED, async () => {
     }
 });
 
-ws.subscribe(this, WebSocketInteraction.DISCONNECTED, () => {
+ws.subscribe(this, WebSocketInteraction.Event.Disconnected, () => {
     StatusElement.innerText = "NOT CONNECTED";
     StatusElement.style.visibility = "visible";
 });
 
-ws.subscribe(this, WebSocketInteraction.NOTIFICATION, (_, packet) => {
+ws.subscribe(this, WebSocketInteraction.Event.Notification, (_, packet) => {
     const property = Object.values(window.__app.Properties)
         .find(p => p.prop.cmd instanceof Array ? p.prop.cmd.includes(packet.type) : p.prop.cmd === packet.type);
 
@@ -78,23 +78,6 @@ ws.subscribe(this, WebSocketInteraction.NOTIFICATION, (_, packet) => {
 
     property.control.setValue(window.__app.Config.getProperty(property.prop.key));
 });
-
-async function request_fx(cmd) {
-    const {data} = await ws.request(cmd);
-    const parser = new BinaryParser(data.buffer, data.byteOffset);
-
-    const count = parser.readUint8();
-
-    const result = new Array(count);
-    for (let i = 0; i < count; i++) {
-        result[i] = {
-            code: parser.readUint8(),
-            name: parser.readNullTerminatedString()
-        }
-    }
-
-    return result;
-}
 
 function startSection(title, lock) {
     const frame = new FrameControl(document.createElement("div"));
@@ -220,8 +203,8 @@ async function initialize() {
 
     window.__app.Lists = Lists;
 
-    config.subscribe(this, Config.LOADED, refreshConfig);
-    config.subscribe(this, Config.PROPERTY_CHANGED, onConfigPropChanged);
+    config.subscribe(this, Config.Event.Loaded, refreshConfig);
+    config.subscribe(this, Config.Event.PropertyChanged, onConfigPropChanged);
 
     refreshConfig();
 }

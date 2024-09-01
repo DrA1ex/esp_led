@@ -151,7 +151,7 @@ export class BinaryParser {
     /**
      * Read a 64-bit unsigned integer from the buffer
      * @param {boolean} [littleEndian=true] - Specify byte order (little or big endian)
-     * @returns {BigInt} - The parsed 64-bit unsigned integer value as a BigInt
+     * @returns {BigInteger} - The parsed 64-bit unsigned integer value as a BigInt
      */
     readBigUint64(littleEndian = true) {
         return this.#read(DataView.prototype.getBigUint64, 8, littleEndian);
@@ -160,7 +160,7 @@ export class BinaryParser {
     /**
      * Read a 64-bit signed integer from the buffer
      * @param {boolean} [littleEndian=true] - Specify byte order (little or big endian)
-     * @returns {BigInt} - The parsed 64-bit signed integer value as a BigInt
+     * @returns {BigInteger} - The parsed 64-bit signed integer value as a BigInt
      */
     readBigInt64(littleEndian = true) {
         return this.#read(DataView.prototype.getBigInt64, 8, littleEndian);

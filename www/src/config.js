@@ -1,17 +1,10 @@
-import {PacketType} from "./cmd.js";
-import {BinaryParser} from "./lib/misc/binary_parser.js";
-import {EventEmitter} from "./lib/misc/event_emitter.js";
+import {AppConfigBase} from "./lib/index.js";
+
 import {Properties} from "./props.js";
+import {PacketType} from "./cmd.js";
 
 
-export class Config extends EventEmitter {
-    static Event = {
-        Loaded: "config_loaded",
-        PropertyChanged: "config_prop_changed",
-    }
-
-    #ws;
-
+export class Config extends AppConfigBase {
     power;
     rgb_mode;
     brightness;
@@ -19,16 +12,13 @@ export class Config extends EventEmitter {
     calibration
     nightMode;
 
-    constructor(ws) {
-        super();
-
-        this.#ws = ws;
+    constructor() {
+        super(Properties);
     }
 
-    async load() {
-        const {data} = await this.#ws.request(PacketType.GET_CONFIG);
-        const parser = new BinaryParser(data.buffer, data.byteOffset);
+    get cmd() {return PacketType.GET_CONFIG;}
 
+    parse(parser) {
         this.power = parser.readBoolean();
         this.rgb_mode = parser.readBoolean();
 
@@ -45,40 +35,5 @@ export class Config extends EventEmitter {
             endTime: parser.readUint32(),
             switchInterval: parser.readUint16(),
         };
-
-        this.emitEvent(Config.Event.Loaded);
-    }
-
-    getProperty(key) {
-        const prop = Properties[key];
-        if (!prop) {
-            console.error(`Unknown property ${key}`);
-            return;
-        }
-
-        const value = prop.key.split(".").reduce((obj, key) => obj[key], this);
-        return (prop.transform ? prop.transform(value) : value) ?? prop.default;
-    }
-
-    setProperty(key, value, sendNotification = true) {
-        if (!Properties[key]) {
-            console.error(`Unknown property ${key}`);
-            return;
-        }
-
-        const oldValue = this.getProperty(key);
-        this.#setProperty(key, value);
-
-        if (sendNotification) this.emitEvent(Config.Event.PropertyChanged, {key, value, oldValue});
-    }
-
-    #setProperty(key, value) {
-        let target = this;
-        const parts = key.split(".");
-        for (let i = 0; i < parts.length - 1; i++) {
-            target = target[parts[i]];
-        }
-
-        target[parts.at(-1)] = value;
     }
 }

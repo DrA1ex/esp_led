@@ -2,18 +2,10 @@ import {SystemPacketType} from "./cmd.js";
 import {Packet} from "./packet.js";
 import {EventEmitter} from "../misc/event_emitter.js";
 
-import {
-    REQUEST_TIMEOUT,
-    REQUEST_SIGNATURE,
-    CONNECTION_TIMEOUT_DELAY_STEP,
-    CONNECTION_CLOSE_TIMEOUT,
-    CONNECTION_TIMEOUT_MAX_DELAY
-} from "../../constants.js";
-
 /**
  * @enum {string}
  */
-const WebSocketState = {
+export const WebSocketState = {
     uninitialized: "uninitialized",
     disconnected: "disconnected",
     connecting: "connecting",
@@ -22,6 +14,43 @@ const WebSocketState = {
 }
 
 const MAX_REQUEST_ID = 2 ** 16 - 1;
+
+export class WebSocketConfig {
+    /**
+     * The timeout for requests in milliseconds.
+     * @type {number}
+     * @default 2000
+     */
+    requestTimeout = 2000;
+
+    /**
+     * The step increase for connection timeout delay in milliseconds.
+     * @type {number}
+     * @default 500
+     */
+    connectionTimeoutDelayStep = 500;
+
+    /**
+     * The maximum connection timeout delay in milliseconds.
+     * @type {number}
+     * @default 5000
+     */
+    connectionTimeoutMaxDelay = 5000;
+
+    /**
+     * The timeout for closing the connection in milliseconds.
+     * @type {number}
+     * @default 500
+     */
+    connectionCloseTimeout = 500;
+
+    /**
+     * An array representing the request signature.
+     * @type {number[]}
+     * @default [0xba, 0xda]
+     */
+    requestSignature = [0xba, 0xda];
+}
 
 export class WebSocketInteraction extends EventEmitter {
     static Event = {
@@ -49,16 +78,15 @@ export class WebSocketInteraction extends EventEmitter {
     #requestMap = {};
 
     gateway;
-    requestTimeout;
 
     get connected() {return this.#state === WebSocketState.connected;}
     get state() {return this.#state;}
 
-    constructor(gateway, requestTimeout = REQUEST_TIMEOUT) {
+    constructor(gateway, config = null) {
         super();
 
         this.gateway = gateway;
-        this.requestTimeout = requestTimeout;
+        this.config = Object.assign(new WebSocketConfig(), config || {});
     }
 
     begin() {
@@ -102,16 +130,16 @@ export class WebSocketInteraction extends EventEmitter {
         if (buffer) {
             if (buffer.byteLength > 255) throw new Error("Request payload too long!");
 
-            this.#ws.send(Uint8Array.of(...REQUEST_SIGNATURE, ...requestIdBytes, cmd, buffer.byteLength, ...new Uint8Array(buffer)));
+            this.#ws.send(Uint8Array.of(...this.config.requestSignature, ...requestIdBytes, cmd, buffer.byteLength, ...new Uint8Array(buffer)));
         } else {
-            this.#ws.send(Uint8Array.of(...REQUEST_SIGNATURE, ...requestIdBytes, cmd, 0x00));
+            this.#ws.send(Uint8Array.of(...this.config.requestSignature, ...requestIdBytes, cmd, 0x00));
         }
 
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
                 this.#closeConnection();
                 reject(new Error("Request timeout"));
-            }, this.requestTimeout);
+            }, this.config.requestTimeout);
 
             function _ok(...args) {
                 clearTimeout(timer);
@@ -257,7 +285,7 @@ export class WebSocketInteraction extends EventEmitter {
 
                 ws.close();
                 clearInterval(timerId);
-            }, CONNECTION_CLOSE_TIMEOUT);
+            }, this.config.connectionCloseTimeout);
         }
 
         console.log(`#${this.#ws.__id}: WebSocket connection closed`);
@@ -271,7 +299,8 @@ export class WebSocketInteraction extends EventEmitter {
         console.log("WebSocket: try reconnect after", this.#reconnectionTimeout);
 
         this.#state = WebSocketState.reconnecting;
-        this.#reconnectionTimeout = Math.min(CONNECTION_TIMEOUT_MAX_DELAY, this.#reconnectionTimeout + CONNECTION_TIMEOUT_DELAY_STEP);
+        this.#reconnectionTimeout = Math.min(this.config.connectionTimeoutMaxDelay,
+            this.#reconnectionTimeout + this.config.connectionTimeoutDelayStep);
     }
 
     #clearConnectionTimerIfNeeded() {

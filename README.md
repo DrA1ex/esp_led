@@ -45,10 +45,10 @@ PLATFORM=esp8266 ./upload_fs.sh
 
 | Endpoint             | Method    | Parameters               | Response                                                  | Description                                             |
 |----------------------|-----------|--------------------------|-----------------------------------------------------------|---------------------------------------------------------|
-| `/api/status`        | `GET`     | None                     | `{"status": "ok", "value": number, "brightness": number}` | Retrieves the current status and brightness level.      |
-| `/api/power`         | `GET`     | `value` (1 or 0)         | {"status": "ok"}                                          | Sets the power state (on/off) of the app.               |
-| `/api/brightness`    | `GET`     | `value` (0-100)          | {"status": "ok"}                                          | Updates the brightness level and saves the new setting. |
-| `/api/debug`         | `GET`     | None                     | Plain Text                                                | Provides debugging information (heap and uptime).       |
+| `/api/status`        | `GET`     | None                     | `{"status": "ok", "value": number, "brightness": number}` | Retrieves the current power and brightness values.      |
+| `/api/power`         | `GET`     | `value` (1 or 0)         | {"status": "ok"}                                          | Sets the power state (on/off).                          |
+| `/api/brightness`    | `GET`     | `value` (0-100)          | {"status": "ok"}                                          | Updates the brightness level.                           |
+| `/api/debug`         | `GET`     | None                     | Plain Text                                                | Provides debugging information.                         |
 | `/api/restart`       | `GET`     | None                     | Plain Text: "OK"                                          | Restarts the server and saves configuration.            |
 
 

@@ -87,8 +87,6 @@ void MqttServerBase<ApplicationT, C1>::begin(const char *host, uint16_t port, co
     _mqttClient.setServer(host, port);
     _mqttClient.setCredentials(user, password);
 
-    D_PRINTF("Host: %s, Port: %u, User: %s, Password: %s\n", host, port, user, password);
-
     _app.event_property_changed().subscribe(this, [this](auto, auto prop, auto) {
         _process_notification(prop);
     });

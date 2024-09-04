@@ -8,7 +8,7 @@
 ApiWebServer::ApiWebServer(Application &application, const char *path) : _app(application), _path(path) {}
 
 void ApiWebServer::begin(WebServer &server) {
-    _on(server, "/power/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    _on(server, "/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
         auto brightness = map16(_app.config().brightness, DAC_MAX_VALUE, 100);
         response_with_json(request, JsonPropListT{
                 {"status",     "ok"},

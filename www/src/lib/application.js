@@ -8,8 +8,9 @@ import {
     TextControl,
     TriggerControl,
     WheelControl
-} from "./control/index.js"
+} from "./control"
 import {EventEmitter} from "./misc/event_emitter.js";
+import {BinaryParser} from "./misc/binary_parser.js";
 import {WebSocketInteraction} from "./network/ws.js";
 import * as FunctionUtils from "./utils/function.js";
 
@@ -83,6 +84,7 @@ export class ApplicationBase extends EventEmitter {
      */
     sendChanges;
 
+    /** @type{WebSocketInteraction}*/
     get ws() {return this.#ws;}
 
     /**
@@ -94,7 +96,7 @@ export class ApplicationBase extends EventEmitter {
 
         this.#cfg = Object.assign(new ApplicationCfg(), config || {});
 
-        this.#ws = new WebSocketInteraction(wsUrl, config.webSocketConfig);
+        this.#ws = new WebSocketInteraction(wsUrl, this.#cfg.webSocketConfig);
 
         this.#ws.subscribe(this, WebSocketInteraction.Event.Connected, this.#handleConnection.bind(this));
         this.#ws.subscribe(this, WebSocketInteraction.Event.Disconnected, () => this.emitEvent(this.Event.Disconnected));
@@ -156,7 +158,18 @@ export class ApplicationBase extends EventEmitter {
         const config = this.config
 
         for (const cfg of this.propertyConfig) {
+            if (!cfg.key || !cfg.props?.length) continue;
+
             const section = this.propertySections[cfg.key];
+            if (section.config.visibleIf) {
+                if (config.getProperty(section.config.visibleIf)) {
+                    section.section.setVisibility(true);
+                } else {
+                    section.section.setVisibility(false);
+                    continue;
+                }
+            }
+
             for (const prop of cfg.props) {
                 if (!prop.key || prop.type === "skip") continue;
 
@@ -175,7 +188,7 @@ export class ApplicationBase extends EventEmitter {
 
                 // TODO:
                 if (prop.type === "select") {
-                    control.setOptions(this.lists[prop.list].map(v => ({key: v.code, label: v.name})));
+                    control.setOptions(this.config.lists[prop.list].map(v => ({key: v.code, label: v.name})));
                 }
 
                 if (prop.type !== "button") {
@@ -228,14 +241,24 @@ export class ApplicationBase extends EventEmitter {
     }
 
     #handleNotification(sender, packet) {
+        return this.#refreshProperty(packet.type, packet.parser());
+    }
+
+    #refreshProperty(type, parser) {
         const property = Object.values(this.propertyMeta)
-            .find(p => p.prop.cmd instanceof Array ? p.prop.cmd.includes(packet.type) : p.prop.cmd === packet.type);
+            .find(p => p.prop.cmd instanceof Array ? p.prop.cmd.includes(type) : p.prop.cmd === type);
 
-        if (!property) return console.error("Received notification for unknown property", packet.type);
+        if (!property) return console.error("Trying to refresh unknown property", type);
 
-        let value = property.prop.cmd instanceof Array
-            ? property.prop.cmd[0] === packet.type
-            : packet.parser()[`read${property.prop.kind}`]();
+        let value;
+        if (property.prop.cmd instanceof Array) {
+            value = property.prop.cmd[0] === type;
+        } else if (property.prop.kind === "FixedString" && property.prop.maxLength) {
+            value = parser.readFixedString(property.prop.maxLength);
+        } else {
+            value = parser[`read${property.prop.kind}`]();
+        }
+
 
         this.emitEvent(this.Event.Notification, {key: property.prop.key, value});
     }
@@ -245,7 +268,9 @@ export class ApplicationBase extends EventEmitter {
         const propertyMeta = {};
 
         for (const cfg of this.propertyConfig) {
-            const section = this.#startSection(cfg.section, cfg.lock ?? false);
+            if (!cfg.key || !cfg.props?.length) continue;
+
+            const section = this.#startSection(cfg.section, cfg);
 
             sectionMeta[cfg.key] = {section, config: cfg, props: {}};
 
@@ -283,14 +308,27 @@ export class ApplicationBase extends EventEmitter {
                         control.setMaxLength(prop.maxLength ?? 255);
                         break;
 
+                    case "password":
+                        control = new InputControl(document.createElement("input"), InputType.password);
+                        control.setMaxLength(prop.maxLength ?? 255);
+                        break;
+
                     case "color":
                         control = new InputControl(document.createElement("input"), InputType.color);
                         break;
 
                     case "button":
                         control = new ButtonControl(document.createElement("a"));
-                        control.addClass("m-top");
                         control.setLabel(prop.label);
+                        break;
+
+                    case "title":
+                        control = new TextControl(document.createElement("h4"));
+                        control.setText(prop.label);
+                        break;
+
+                    case "separator":
+                        control = new FrameControl(document.createElement("hr"));
                         break;
 
                     case "skip":
@@ -301,15 +339,25 @@ export class ApplicationBase extends EventEmitter {
                 }
 
                 if (control) {
-                    control.setAttribute("data-loading", true);
+                    if (prop.key) control.setAttribute("data-loading", true);
                     if (prop.displayConverter) control.setDisplayConverter(prop.displayConverter);
+
+                    if (prop.extra?.m_top) {
+                        if (title) {
+                            title.addClass("m-top");
+                        } else {
+                            control.addClass("m-top");
+                        }
+                    }
 
                     section.appendChild(control);
                 }
 
-                const entry = {prop, title, control};
-                sectionMeta[cfg.key].props[prop.key] = entry;
-                propertyMeta[prop.key] = entry;
+                if (prop.key) {
+                    const entry = {prop, title, control};
+                    sectionMeta[cfg.key].props[prop.key] = entry;
+                    propertyMeta[prop.key] = entry;
+                }
             }
         }
 
@@ -317,7 +365,7 @@ export class ApplicationBase extends EventEmitter {
         this.#propertySections = sectionMeta;
     }
 
-    #startSection(title, lock) {
+    #startSection(title, {lock, collapse}) {
         const frame = new FrameControl(document.createElement("div"));
         frame.addClass("section");
 
@@ -331,6 +379,16 @@ export class ApplicationBase extends EventEmitter {
 
             frame.setAttribute("data-locked", true);
             frame.appendChild(lockBtn);
+        } else if (collapse) {
+            const collapseBtn = new ButtonControl(document.createElement("a"));
+            collapseBtn.addClass("collapse");
+            collapseBtn.setOnClick(() => {
+                const value = frame.getAttribute("data-collapsed") === "true";
+                frame.setAttribute("data-collapsed", !value);
+            });
+
+            frame.setAttribute("data-collapsed", true);
+            frame.appendChild(collapseBtn);
         }
 
         const sectionTitle = new TextControl(document.createElement("h3"));
@@ -363,8 +421,20 @@ export class ApplicationBase extends EventEmitter {
 
             if (Array.isArray(prop.cmd)) {
                 await this.#ws.request(value ? prop.cmd[0] : prop.cmd[1]);
-            } else if (prop.type === "text") {
-                await this.#ws.request(prop.cmd, new TextEncoder().encode(value).buffer);
+            } else if (prop.type === "text" || prop.type === "password") {
+                const str = prop.maxLength ? value.slice(0, prop.maxLength) : value;
+                let buffer = new TextEncoder().encode(str).buffer;
+
+                if (prop.maxLength && prop.kind === "FixedString") {
+                    const paddedBuffer = new Uint8Array(prop.maxLength).fill(0);
+                    // Need to slice twice, because some symbols takes more byte space (like emoji)
+                    const dataBuffer = new Uint8Array(buffer).slice(0, prop.maxLength);
+                    paddedBuffer.set(dataBuffer);
+                    buffer = paddedBuffer.buffer;
+                }
+
+                await this.#ws.request(prop.cmd, buffer);
+                control.setValue(new BinaryParser(buffer).readFixedString(prop.maxLength));
             } else {
                 const kind = prop.kind ?? "Uint8";
                 const size = {
@@ -390,8 +460,12 @@ export class ApplicationBase extends EventEmitter {
                     Int16: DataView.prototype.setInt16,
                     Uint32: DataView.prototype.setUint32,
                     Int32: DataView.prototype.setInt32,
-                    BigUint64: DataView.prototype.setBigUint64,
-                    BigInt64: DataView.prototype.setBigInt64,
+                    BigUint64: function (offset, value, littleEndian) {
+                        this.setBigUint64(0, BigInt(value), littleEndian);
+                    },
+                    BigInt64: function (offset, value, littleEndian) {
+                        this.setBigInt64(0, BigInt(value), littleEndian);
+                    },
                     Float32: DataView.prototype.setFloat32,
                     Float64: DataView.prototype.setFloat64,
                 }[kind];
@@ -401,6 +475,10 @@ export class ApplicationBase extends EventEmitter {
                 serializeFn.call(view, 0, value, true);
 
                 await this.#ws.request(prop.cmd, req.buffer);
+
+                if (prop.type !== "wheel") {
+                    control.setValue(value);
+                }
             }
 
             console.log(`Changed '${prop.key}': '${oldValue}' -> '${value}'`);

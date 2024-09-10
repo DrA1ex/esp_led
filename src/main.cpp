@@ -31,16 +31,15 @@ Timer global_timer;
 Storage<Config> config_storage(global_timer, "config", STORAGE_CONFIG_VERSION);
 
 NightModeManager night_mode_manager(config_storage.get());
-Application app(config_storage, night_mode_manager);
+Application app(config_storage, night_mode_manager, global_timer);
 
 WifiManager wifi_manager(WIFI_SSID, WIFI_PASSWORD, WIFI_CONNECTION_CHECK_INTERVAL);
 WebServer web_server(WEB_PORT);
 
-
 ApiWebServer api_server(app);
-MqttServer mqtt_server(app);
+AppMqttServer mqtt_server(app);
 
-PacketHandler packet_handler(app);
+AppPacketHandler packet_handler(app);
 WebSocketServer ws_server(app, packet_handler);
 
 NtpTime ntp_time;
@@ -104,20 +103,20 @@ void animation_loop(void *) {
         case AppState::INITIALIZATION: {
             if (app.config().power) {
                 const auto factor = map16(
-                        (millis() - app.state_change_time) % WIFI_CONNECT_FLASH_TIMEOUT,
-                        WIFI_CONNECT_FLASH_TIMEOUT,
-                        DAC_MAX_VALUE
+                    (millis() - app.state_change_time) % WIFI_CONNECT_FLASH_TIMEOUT,
+                    WIFI_CONNECT_FLASH_TIMEOUT,
+                    DAC_MAX_VALUE
                 );
 
                 uint16_t brightness = app.brightness() * cubic_wave16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
                 app.set_brightness(brightness);
             }
         }
-            break;
+        break;
 
         case AppState::TURNING_ON: {
-            uint16_t factor = std::min<unsigned long>(
-                    DAC_MAX_VALUE, (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
+            uint16_t factor = std::min<unsigned long>(DAC_MAX_VALUE,
+                (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
             uint16_t brightness = (uint16_t) app.brightness() * ease_cubic16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
             app.set_brightness(brightness);
 
@@ -126,8 +125,8 @@ void animation_loop(void *) {
         }
 
         case AppState::TURNING_OFF: {
-            uint16_t factor = DAC_MAX_VALUE - std::min<unsigned long>(
-                    DAC_MAX_VALUE, (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
+            uint16_t factor = DAC_MAX_VALUE - std::min<unsigned long>(DAC_MAX_VALUE,
+                (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
             uint16_t brightness = (uint16_t) app.brightness() * ease_cubic16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
             app.set_brightness(brightness);
 
@@ -188,7 +187,7 @@ void service_loop(void *) {
             ArduinoOTA.setHostname(MDNS_NAME);
             ArduinoOTA.begin();
 
-            app.load();
+            app.begin();
 
             app.change_state(AppState::STAND_BY);
             state = ServiceState::STAND_BY;

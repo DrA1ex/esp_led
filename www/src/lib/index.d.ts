@@ -217,9 +217,9 @@ declare module "network/ws.js" {
         /**
          * @param cmd - Command type (generic)
          * @param buffer - Optional payload as ArrayBuffer
-         * @returns Promise that resolves with either ArrayBuffer or any type
+         * @returns Promise that resolves with Packet
          */
-        request<CmdEnumT>(cmd: CmdEnumT, buffer?: ArrayBuffer | null): Promise<ArrayBuffer | any>;
+        request<CmdEnumT>(cmd: CmdEnumT, buffer?: ArrayBuffer | null): Promise<Packet<SystemPacketType>>;
     }
 }
 
@@ -265,6 +265,7 @@ declare module "control/index.js" {
 
     export enum InputType {
         text = "text",
+        password = "password",
         int = "int",
         float = "float",
         time = "time",
@@ -319,7 +320,7 @@ declare module "control/index.js" {
 
 // main module
 declare module "application.js" {
-    import {Control, FrameControl, TextControl} from "control/index.js";
+    import {Control, FrameControl, InputControl, TextControl} from "control/index.js";
     import {WebSocketInteraction, WebSocketConfig} from "network/ws.js";
     import {EventEmitter} from "misc/event_emitter.js";
     import {BinaryParser} from "misc/binary_parser.js";
@@ -331,9 +332,12 @@ declare module "application.js" {
         select = "select",
         int = "int",
         text = "text",
+        password = "password",
         color = "color",
         button = "button",
         skip = "skip",
+        title = "title",
+        separator = "separator",
     }
 
     export enum PropertyKind {
@@ -348,17 +352,19 @@ declare module "application.js" {
         BigInt64 = "BigInt64",
         Float32 = "Float32",
         Float64 = "Float64",
+        FixedString = "FixedString",
+        NullTerminatedString = "NullTerminatedString",
     }
 
     // TODO: separate types
     export interface PropertyConfig {
         key: string;
-        type: ControlType;
+        type: keyof typeof ControlType;
         title?: string;
         cmd?: [number, number] | number;
         min?: number;
         limit?: number;
-        kind?: PropertyKind;
+        kind?: keyof typeof PropertyKind;
         label?: string;
         maxLength?: number;
         list?: number;
@@ -366,21 +372,31 @@ declare module "application.js" {
         default?: any,
         visibleIf?: string;
         displayConverter?: (value: any) => string;
+        extra?: { m_top?: boolean };
     }
 
     export interface SectionConfig {
         key: string;
         section: string;
         lock?: boolean;
+        collapse?: boolean;
+        visibleIf?: string;
         props: PropertyConfig[];
     }
 
     export type PropertiesConfig = SectionConfig[];
 
+    export interface SelectOptionsConfig {
+        code: number;
+        name: string;
+    }
+
+    export type SelectListConfig = Record<string, SelectOptionsConfig>
+
     export interface PropertyMeta {
         prop: PropertyConfig;
         title: TextControl;
-        control: Control;
+        control: Control | InputControl;
     }
 
     export interface PropertySectionMeta {

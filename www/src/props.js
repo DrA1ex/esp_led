@@ -2,7 +2,7 @@ import {PacketType} from "./cmd.js";
 
 export const PropertyConfig = [{
     key: "general", section: "General", props: [
-        {key: "power", title: "Power", type: "trigger", cmd: [PacketType.POWER_ON, PacketType.POWER_OFF]},
+        {key: "power", title: "Power", type: "trigger", kind: "Boolean", cmd: PacketType.POWER},
         {key: "brightness", title: "Brightness", type: "wheel", min: 1, limit: 16383, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
         {key: "color", title: "Color", type: "color", kind: "Uint32", cmd: PacketType.COLOR, visibleIf: "rgb_mode"},
         {key: "calibration", title: "Calibration", type: "color", kind: "Uint32", cmd: PacketType.CALIBRATION, visibleIf: "rgb_mode"},

@@ -15,9 +15,15 @@
 #define RGB_MODE                                (0u)                    // RGB LED mode
 
 #if RGB_MODE == 1
+#if ARDUINO_ARCH_ESP32
+#define LED_R_PIN                               (0u)
+#define LED_G_PIN                               (1u)
+#define LED_B_PIN                               (2u)
+#else
 #define LED_R_PIN                               (0u) // D3
 #define LED_G_PIN                               (4u) // D2
 #define LED_B_PIN                               (5u) // D1
+#endif
 #else
 #define LED_PIN                                 (1u)
 #endif

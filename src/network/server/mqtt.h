@@ -1,14 +1,12 @@
-#include <AsyncMqttClient.h>
+#pragma once
 
 #include "lib/network/server/mqtt.h"
 
 #include "app/application.h"
-#include "utils/math.h"
 
-
-class MqttServer : public MqttServerBase<Application> {
+class AppMqttServer : public MqttServer<Application> {
 public:
-    explicit MqttServer(Application &app) : MqttServerBase<Application>(app) {}
+    explicit AppMqttServer(Application &app) : MqttServer(app) {}
 
 protected:
     void _transform_topic_payload(const String &topic, String &payload) override;

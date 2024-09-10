@@ -33,6 +33,9 @@ export class AppConfigBase extends EventEmitter {
      */
     parse(parser) { throw new Error("Not implemented"); }
 
+    /** @type {SelectListConfig} */
+    lists = {};
+
     /**
      * @param {PropertiesConfig} propertyConfig
      */
@@ -40,7 +43,9 @@ export class AppConfigBase extends EventEmitter {
         super();
 
         this.#propertyMap = propertyConfig.reduce((res, section) => {
-            for (const prop of section.props) {
+            for (const prop of section.props ?? []) {
+                if (!prop.key) continue;
+
                 if (res[prop.key]) {
                     console.warn(`Key ${prop.key} already exist`);
                     continue;
@@ -73,7 +78,7 @@ export class AppConfigBase extends EventEmitter {
             return;
         }
 
-        const value = prop.key.split(".").reduce((obj, key) => obj[key], this);
+        const value = this.#property(key, (obj, key) => obj[key]);
         return (prop.transform ? prop.transform(value) : value) ?? prop.default;
     }
 
@@ -97,5 +102,21 @@ export class AppConfigBase extends EventEmitter {
         }
 
         target[parts.at(-1)] = value;
+
+        this.#property(key, (obj, key) => obj[key] = value);
+    }
+
+    #property(path, fn) {
+        let target = this;
+        const parts = path.split(".");
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (target instanceof Array) {
+                target = target.at(Number.parseInt(parts[i]));
+            } else {
+                target = target[parts[i]];
+            }
+        }
+
+        return fn(target, parts.at(-1));
     }
 }

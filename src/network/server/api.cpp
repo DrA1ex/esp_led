@@ -45,8 +45,7 @@ void ApiWebServer::begin(WebServer &server) {
     _on(server, "/restart", HTTP_GET, [this](AsyncWebServerRequest *request) {
         request->send_P(200, "text/plain", "OK");
 
-        if (_app.config_storage.is_pending_commit()) _app.config_storage.force_save();
-        ESP.restart();
+        _app.restart();
     });
 }
 

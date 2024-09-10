@@ -115,7 +115,7 @@ export class WebSocketInteraction extends EventEmitter {
     /**
      * @param {CmdEnumT} cmd
      * @param {ArrayBuffer} [buffer=null]
-     * @returns {Promise<ArrayBuffer|*>}
+     * @returns {Promise<Packet>}
      *
      * @template CmdEnumT
      */

@@ -5,22 +5,18 @@
 #include "utils/enum.h"
 
 MAKE_ENUM(PacketType, uint8_t,
-          POWER_ON, 0x01,
-          POWER_OFF, 0x02,
+    POWER, 0x01,
+    BRIGHTNESS, 0x02,
 
-          BRIGHTNESS, 0x03,
+    COLOR, 0x10,
+    CALIBRATION, 0x11,
 
-          COLOR, 0x10,
-          CALIBRATION, 0x11,
+    NIGHT_MODE_ENABLED, 0x20,
+    NIGHT_MODE_START, 0x21,
+    NIGHT_MODE_END, 0x22,
+    NIGHT_MODE_INTERVAL, 0x23,
+    NIGHT_MODE_BRIGHTNESS, 0x24,
 
-          NIGHT_MODE_ENABLED, 0x20,
-          NIGHT_MODE_START, 0x21,
-          NIGHT_MODE_END, 0x22,
-          NIGHT_MODE_INTERVAL, 0x23,
-          NIGHT_MODE_BRIGHTNESS, 0x24,
-
-          GET_CONFIG, 0xa0,
-
-          RESPONSE_STRING, 0xf0,
-          RESPONSE_BINARY, 0xf1,
+    GET_CONFIG, 0xa0,
+    RESTART, 0xb0,
 )

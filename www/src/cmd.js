@@ -2,10 +2,8 @@
  * @enum {Number}
  */
 export const PacketType = {
-    POWER_ON: 0x01,
-    POWER_OFF: 0x02,
-
-    BRIGHTNESS: 0x03,
+    POWER: 0x01,
+    BRIGHTNESS: 0x02,
 
     COLOR: 0x10,
     CALIBRATION: 0x11,

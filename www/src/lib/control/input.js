@@ -6,6 +6,7 @@ import * as ColorUtils from "../utils/color.js"
  */
 export const InputType = {
     text: "text",
+    password: "password",
     int: "int",
     float: "float",
     time: "time",
@@ -37,6 +38,10 @@ export class InputControl extends InputControlBase {
                 this.element.type = "color";
                 this.element.oninput = this._onChange.bind(this);
                 break
+
+            case InputType.password:
+                this.element.type = "password";
+                break;
 
             default:
                 this.element.type = "text";

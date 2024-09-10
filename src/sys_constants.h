@@ -26,3 +26,5 @@
 #define NTP_UPDATE_INTERVAL                     (24ul * 3600 * 1000)
 
 #define GAMMA                                   (2.2f)
+
+#define RESTART_DELAY                           (500u)

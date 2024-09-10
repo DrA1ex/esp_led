@@ -8,7 +8,8 @@ set +v
 echo "Building..."
 
 cd ./www || (echo "No directory ./www" && exit 1)
-npm run build || (echo "Failed" && exit 2)
+npm install || (echo "Unable to install npm packages" && exit 2)
+npm run build || (echo "Failed" && exit 3)
 cd ..
 
 echo "Compress..."

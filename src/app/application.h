@@ -13,6 +13,8 @@ class Application : public AbstractApplication<Config, AppPropertyMetadata> {
     NightModeManager &_night_mode_manager;
     Timer &_timer;
 
+    bool _rgb_mode {};
+
 public:
     inline ConfigT &config() override { return _config_storage.get(); }
     inline SysConfig &sys_config() { return config().sys_config; }
@@ -37,12 +39,10 @@ public:
     void restart();
 
 private:
-#if RGB_MODE_SUPPORT == 1
     uint16_t _color_r = 0;
     uint16_t _color_g = 0;
     uint16_t _color_b = 0;
 
     uint16_t _convert_color(uint32_t color_data, uint32_t calibration_data, uint8_t bit);
     uint8_t _apply_gamma(uint8_t color, float gamma = GAMMA);
-#endif
 };

@@ -55,13 +55,10 @@ export class Config extends AppConfigBase {
             wifiMaxConnectionAttemptInterval: parser.readUint32(),
 
             rgbMode: this.rgbMode = parser.readBoolean(),
-            ...(this.rgbMode ? {
-                ledRPin: parser.readUint8(),
-                ledGPin: parser.readUint8(),
-                ledBPin: parser.readUint8(),
-            } : {
-                ledPin: parser.readUint8()
-            }),
+
+            ledRPin: parser.readUint8(),
+            ledGPin: parser.readUint8(),
+            ledBPin: parser.readUint8(),
 
             powerChangeTimeout: parser.readUint32(),
             wifiConnectFlashTimeout: parser.readUint32(),
@@ -80,6 +77,7 @@ export class Config extends AppConfigBase {
             mqttConvertBrightness: parser.readBoolean(),
         };
 
+        this.sysConfig.ledPin = this.sysConfig.ledRPin;
         this.singleLedMode = !this.rgbMode;
     }
 }

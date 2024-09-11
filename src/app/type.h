@@ -109,13 +109,11 @@ inline std::map<PacketType, AppPropertyMetadata> PacketTypeMetadataMap = {
     define_meta_entry(NotificationProperty::SYS_CONFIG_LED_R_PIN, PacketType::SYS_CONFIG_LED_R_PIN,
         &Config::sys_config, &SysConfig::led_r_pin),
 
-#if RGB_MODE_SUPPORT == 1
     define_meta_entry(NotificationProperty::SYS_CONFIG_LED_G_PIN, PacketType::SYS_CONFIG_LED_G_PIN,
         &Config::sys_config, &SysConfig::led_g_pin),
 
     define_meta_entry(NotificationProperty::SYS_CONFIG_LED_B_PIN, PacketType::SYS_CONFIG_LED_B_PIN,
         &Config::sys_config, &SysConfig::led_b_pin),
-#endif
 
     define_meta_entry(NotificationProperty::SYS_CONFIG_POWER_CHANGE_TIMEOUT, PacketType::SYS_CONFIG_POWER_CHANGE_TIMEOUT,
         &Config::sys_config, &SysConfig::power_change_timeout),

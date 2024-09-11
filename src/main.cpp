@@ -69,19 +69,6 @@ void setup() {
 
     analogWriteResolution(DAC_RESOLUTION);
 
-#if RGB_MODE_SUPPORT == 1
-    pinMode(sys_config->led_r_pin, OUTPUT);
-    pinMode(sys_config->led_g_pin, OUTPUT);
-    pinMode(sys_config->led_b_pin, OUTPUT);
-
-    digitalWrite(sys_config->led_r_pin, PIN_DISABLED);
-    digitalWrite(sys_config->led_g_pin, PIN_DISABLED);
-    digitalWrite(sys_config->led_b_pin, PIN_DISABLED);
-#else
-    pinMode(sys_config->led_pin, OUTPUT);
-    digitalWrite(sys_config->led_pin, PIN_DISABLED);
-#endif
-
     global_timer.add_interval(animation_loop, 1000 / 60);
     global_timer.add_interval(service_loop, 20);
 }

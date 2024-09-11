@@ -31,16 +31,19 @@ struct __attribute ((packed)) SysConfig {
     uint32_t wifi_connection_check_interval = WIFI_CONNECTION_CHECK_INTERVAL;
     uint32_t wifi_max_connection_attempt_interval = WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL;
 
-    bool rgb_mode = RGB_MODE_SUPPORT;
+    bool rgb_mode = RGB_MODE_ENABLED;
 
-    //TODO: Dynamically configure
-#if RGB_MODE_SUPPORT == 1
-    uint8_t led_r_pin = LED_R_PIN;
-    uint8_t led_g_pin = LED_G_PIN;
-    uint8_t led_b_pin = LED_B_PIN;
-#else
-    uint8_t led_pin = LED_PIN;
-#endif
+    union {
+        struct {
+            uint8_t led_r_pin = LED_R_PIN;
+            uint8_t led_g_pin = LED_G_PIN;
+            uint8_t led_b_pin = LED_B_PIN;
+        };
+
+        struct {
+            uint8_t led_pin;
+        };
+    };
 
     uint32_t power_change_timeout = POWER_CHANGE_TIMEOUT;
     uint32_t wifi_connect_flash_timeout = WIFI_CONNECT_FLASH_TIMEOUT;

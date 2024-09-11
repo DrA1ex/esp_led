@@ -30,8 +30,7 @@ export const PropertyConfig = [{
         {key: "sysConfig.wifiMaxConnectionAttemptInterval", title: "Max Connection Attempt Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL},
 
         {type: "title", label: "LED"},
-        {key: "rgbMode", type: "skip"},
-        //{key: "rgbMode", title: "RGB Mode", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_RGB_MODE},
+        {key: "rgbMode", title: "RGB Mode", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_RGB_MODE},
 
         {key: "sysConfig.ledRPin", title: "Red Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_R_PIN, visibleIf: "rgbMode"},
         {key: "sysConfig.ledGPin", title: "Green Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_G_PIN, visibleIf: "rgbMode"},

@@ -60,6 +60,7 @@ export class Config extends AppConfigBase {
             ledGPin: parser.readUint8(),
             ledBPin: parser.readUint8(),
 
+            ledMinBrightness: parser.readUint16(),
             powerChangeTimeout: parser.readUint32(),
             wifiConnectFlashTimeout: parser.readUint32(),
 

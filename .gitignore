@@ -2,6 +2,7 @@
 .idea
 .DS_Store
 
+src/_override
 src/credentials.h
 
 data/

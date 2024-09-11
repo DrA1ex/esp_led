@@ -3,6 +3,7 @@
 #include <DNSServer.h>
 #include <LittleFS.h>
 
+#include "credentials.h"
 #include "constants.h"
 
 #include "lib/misc/event_topic.h"

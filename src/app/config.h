@@ -35,9 +35,9 @@ struct __attribute ((packed)) SysConfig {
 
     union {
         struct {
-            uint8_t led_r_pin = LED_R_PIN;
-            uint8_t led_g_pin = LED_G_PIN;
-            uint8_t led_b_pin = LED_B_PIN;
+            uint8_t led_r_pin;
+            uint8_t led_g_pin;
+            uint8_t led_b_pin;
         };
 
         struct {
@@ -45,6 +45,7 @@ struct __attribute ((packed)) SysConfig {
         };
     };
 
+    uint16_t led_min_brightness = LED_MIN_BRIGHTNESS;
     uint32_t power_change_timeout = POWER_CHANGE_TIMEOUT;
     uint32_t wifi_connect_flash_timeout = WIFI_CONNECT_FLASH_TIMEOUT;
 
@@ -61,6 +62,13 @@ struct __attribute ((packed)) SysConfig {
     char mqtt_password[16] = MQTT_PASSWORD;
 
     uint8_t mqtt_convert_brightness = MQTT_CONVERT_BRIGHTNESS;
+
+    SysConfig() {
+        led_pin = LED_PIN;
+        led_r_pin = LED_R_PIN;
+        led_g_pin = LED_G_PIN;
+        led_b_pin = LED_B_PIN;
+    }
 };
 
 struct __attribute ((packed)) NightModeConfig {

@@ -88,9 +88,13 @@ void Application::_apply_rgb_brightness(uint16_t brightness) {
 }
 
 uint16_t Application::brightness() {
-    uint16_t result = _night_mode_manager.is_night_time()
-                          ? _night_mode_manager.get_brightness()
-                          : config().brightness;
+    uint16_t result;
+    if (_night_mode_manager.is_night_time()) {
+        result = _night_mode_manager.get_brightness();
+    } else {
+        result = std::max(sys_config().led_min_brightness, config().brightness);
+    }
+
 
     return std::min(DAC_MAX_VALUE, result);
 }

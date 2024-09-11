@@ -4,7 +4,7 @@ import {PacketType} from "./cmd.js";
 export const PropertyConfig = [{
     key: "general", section: "General", props: [
         {key: "power", title: "Power", type: "trigger", kind: "Boolean", cmd: PacketType.POWER},
-        {key: "brightness", title: "Brightness", type: "wheel", min: 1, limit: 16383, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
+        {key: "brightness", title: "Brightness", type: "wheel", limit: 16383, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
         {key: "color", title: "Color", type: "color", kind: "Uint32", cmd: PacketType.COLOR, visibleIf: "rgbMode"},
         {key: "calibration", title: "Calibration", type: "color", kind: "Uint32", cmd: PacketType.CALIBRATION, visibleIf: "rgbMode"},
     ],
@@ -40,6 +40,7 @@ export const PropertyConfig = [{
         {key: "sysConfig.ledPin", title: "Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_R_PIN, visibleIf: "singleLedMode"},
 
         {type: "title", label: "LED EXTRA"},
+        {key: "sysConfig.ledMinBrightness", title: "Min Brightness", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MIN_BRIGHTNESS},
         {key: "sysConfig.powerChangeTimeout", title: "Power Change Timeout", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_POWER_CHANGE_TIMEOUT},
         {key: "sysConfig.wifiConnectFlashTimeout", title: "WiFi Connect Flash Timeout", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_CONNECT_FLASH_TIMEOUT},
 
@@ -47,7 +48,7 @@ export const PropertyConfig = [{
         {key: "sysConfig.timeZone", title: "Time Zone", type: "float", kind: "Float32", cmd: PacketType.SYS_CONFIG_TIME_ZONE},
 
         {type: "title", label: "Web Auth"},
-        {key: "sysConfig.webAuth", title: "Enabled", type: "trigger", kind: "Boolean"},
+        {key: "sysConfig.webAuth", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_WEB_AUTH_ENABLED},
         {key: "sysConfig.webAuthUser", title: "User", type: "text", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_WEB_AUTH_USER},
         {key: "sysConfig.webAuthPassword", title: "Password", type: "password", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_WEB_AUTH_PASSWORD},
 

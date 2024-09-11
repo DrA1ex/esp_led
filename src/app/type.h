@@ -49,6 +49,8 @@ MAKE_ENUM(NotificationProperty, uint8_t,
     SYS_CONFIG_MQTT_USER, 28,
     SYS_CONFIG_MQTT_PASSWORD, 29,
     SYS_CONFIG_MQTT_CONVERT_BRIGHTNESS, 30,
+
+    SYS_CONFIG_LED_MIN_BRIGHTNESS, 31,
 )
 
 using AppPropertyMetadata = PropertyMetadata<NotificationProperty, PacketType>;
@@ -150,4 +152,7 @@ inline std::map<PacketType, AppPropertyMetadata> PacketTypeMetadataMap = {
 
     define_meta_entry(NotificationProperty::SYS_CONFIG_MQTT_CONVERT_BRIGHTNESS, PacketType::SYS_CONFIG_MQTT_CONVERT_BRIGHTNESS,
         &Config::sys_config, &SysConfig::mqtt_convert_brightness),
+
+    define_meta_entry(NotificationProperty::SYS_CONFIG_LED_MIN_BRIGHTNESS, PacketType::SYS_CONFIG_LED_MIN_BRIGHTNESS,
+        &Config::sys_config, &SysConfig::led_min_brightness),
 };

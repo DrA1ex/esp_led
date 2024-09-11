@@ -25,8 +25,10 @@ void Application::_handle_property_change(NotificationProperty type) {
         set_power(config().power);
     } else if (type >= NotificationProperty::NIGHT_MODE_ENABLED && type <= NotificationProperty::NIGHT_MODE_BRIGHTNESS) {
         _night_mode_manager.reset();
+        update();
+    } else {
+        update();
     }
-    update();
 }
 
 void Application::load() {

@@ -303,6 +303,10 @@ export class ApplicationBase extends EventEmitter {
                         control = control = new InputControl(document.createElement("input"), InputType.int);
                         break;
 
+                    case "float":
+                        control = control = new InputControl(document.createElement("input"), InputType.float);
+                        break;
+
                     case "text":
                         control = new InputControl(document.createElement("input"), InputType.text);
                         control.setMaxLength(prop.maxLength ?? 255);

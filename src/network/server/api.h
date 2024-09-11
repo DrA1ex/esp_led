@@ -1,10 +1,8 @@
 #pragma once
 
-#include "constants.h"
-#include "app/application.h"
-
 #include "lib/network/web.h"
 
+#include "app/application.h"
 #include "utils/network.h"
 
 class ApiWebServer {
@@ -17,5 +15,5 @@ public:
     void begin(WebServer &server);
 
 protected:
-    void _on(WebServer &server, const char *uri, WebRequestMethodComposite method, ArRequestHandlerFunction onRequest);
+    void _on(WebServer &server, const char *uri, WebRequestMethodComposite method, const ArRequestHandlerFunction &onRequest);
 };

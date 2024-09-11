@@ -3,7 +3,7 @@
   "author": "DrA1ex",
   "scripts": {
     "build": "rm -rf ../data/* && esbuild ./src/index.js ./src/service_worker.js --bundle --format=esm --outdir=../data --minify && npm run static",
-    "static": "cp ./src/index.html ../data/ && cp ./src/style.css ../data/ && cp -r ./favicons/* ../data/"
+    "static": "cp ./src/index.html ../data/ && cp ./src/hotspot-detect.html ../data/ && cp ./src/lib/style.css ../data/ && cp -r ./favicons/* ../data/"
   },
   "devDependencies": {
     "esbuild": "^0.19.11"

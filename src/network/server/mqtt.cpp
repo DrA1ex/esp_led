@@ -3,7 +3,7 @@
 #include "utils/math.h"
 
 void AppMqttServer::_transform_topic_payload(const String &topic, String &payload) {
-    if constexpr (MQTT_CONVERT_BRIGHTNESS && topic == MQTT_TOPIC_BRIGHTNESS) {
+    if (app().sys_config().mqtt_convert_brightness && topic == MQTT_TOPIC_BRIGHTNESS) {
         payload = map16(payload.toInt(), 100, DAC_MAX_VALUE);
     }
 
@@ -11,7 +11,7 @@ void AppMqttServer::_transform_topic_payload(const String &topic, String &payloa
 }
 
 void AppMqttServer::_transform_topic_notification(const PropertyMetadata<NotificationProperty, PacketType> &meta, String &payload) {
-    if constexpr (MQTT_CONVERT_BRIGHTNESS && meta.property == NotificationProperty::BRIGHTNESS) {
+    if (app().sys_config().mqtt_convert_brightness && meta.property == NotificationProperty::BRIGHTNESS) {
         payload = map16(payload.toInt(), DAC_MAX_VALUE, 100);
     }
 

@@ -26,7 +26,7 @@ void Application::begin() {
 }
 
 void Application::load() {
-#if RGB_MODE == 1
+#if RGB_MODE_SUPPORT == 1
     _color_r = _convert_color(config().color, config().calibration, 16);
     _color_g = _convert_color(config().color, config().calibration, 8);
     _color_b = _convert_color(config().color, config().calibration, 0);
@@ -73,12 +73,12 @@ void Application::set_brightness(uint16_t value) {
     auto brightness = DAC_MAX_VALUE - (uint16_t) floor(
         log10f(10 - (float) value * 9 / DAC_MAX_VALUE) * DAC_MAX_VALUE);
 
-#if RGB_MODE == 1
-    analogWrite(LED_R_PIN, (uint32_t) _color_r * brightness / DAC_MAX_VALUE);
-    analogWrite(LED_G_PIN, (uint32_t) _color_g * brightness / DAC_MAX_VALUE);
-    analogWrite(LED_B_PIN, (uint32_t) _color_b * brightness / DAC_MAX_VALUE);
+#if RGB_MODE_SUPPORT == 1
+    analogWrite(sys_config().led_r_pin, (uint32_t) _color_r * brightness / DAC_MAX_VALUE);
+    analogWrite(sys_config().led_g_pin, (uint32_t) _color_g * brightness / DAC_MAX_VALUE);
+    analogWrite(sys_config().led_b_pin, (uint32_t) _color_b * brightness / DAC_MAX_VALUE);
 #else
-    analogWrite(LED_PIN, brightness);
+    analogWrite(sys_config().led_pin, brightness);
 #endif
 }
 
@@ -90,7 +90,7 @@ uint16_t Application::brightness() {
     return std::min(DAC_MAX_VALUE, result);
 }
 
-#if RGB_MODE == 1
+#if RGB_MODE_SUPPORT == 1
 uint16_t Application::_convert_color(uint32_t color_data, uint32_t calibration_data, uint8_t bit) {
     uint8_t color = (color_data >> bit) & 0xff;
     uint8_t calibration = (calibration_data >> bit) & 0xff;

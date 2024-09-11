@@ -1,12 +1,12 @@
 #pragma once
 
-#include "constants.h"
-#include "config.h"
-#include "type.h"
-#include "night_mode.h"
-
 #include "lib/base/application.h"
 #include "lib/misc/storage.h"
+
+#include "config.h"
+#include "constants.h"
+#include "night_mode.h"
+#include "type.h"
 
 class Application : public AbstractApplication<Config, AppPropertyMetadata> {
     Storage<Config> &_config_storage;
@@ -15,6 +15,7 @@ class Application : public AbstractApplication<Config, AppPropertyMetadata> {
 
 public:
     inline ConfigT &config() override { return _config_storage.get(); }
+    inline SysConfig &sys_config() { return config().sys_config; }
 
     unsigned long state_change_time = 0;
     AppState state = AppState::UNINITIALIZED;
@@ -36,10 +37,10 @@ public:
     void restart();
 
 private:
-#if RGB_MODE == 1
-    uint16_t _color_r;
-    uint16_t _color_g;
-    uint16_t _color_b;
+#if RGB_MODE_SUPPORT == 1
+    uint16_t _color_r = 0;
+    uint16_t _color_g = 0;
+    uint16_t _color_b = 0;
 
     uint16_t _convert_color(uint32_t color_data, uint32_t calibration_data, uint8_t bit);
     uint8_t _apply_gamma(uint8_t color, float gamma = GAMMA);

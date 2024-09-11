@@ -1,19 +1,18 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
+#include <DNSServer.h>
 #include <LittleFS.h>
 
 #include "constants.h"
-#include "credentials.h"
 
 #include "lib/misc/event_topic.h"
 #include "lib/misc/ntp_time.h"
 #include "lib/misc/storage.h"
 #include "lib/misc/timer.h"
-
 #include "lib/network/web.h"
 #include "lib/network/wifi.h"
 #include "lib/network/server/ws.h"
-
+#include "lib/utils/qr.h"
 #include "lib/debug.h"
 
 #include "app/config.h"
@@ -33,7 +32,7 @@ Storage<Config> config_storage(global_timer, "config", STORAGE_CONFIG_VERSION);
 NightModeManager night_mode_manager(config_storage.get());
 Application app(config_storage, night_mode_manager, global_timer);
 
-WifiManager wifi_manager(WIFI_SSID, WIFI_PASSWORD, WIFI_CONNECTION_CHECK_INTERVAL);
+WifiManager *wifi_manager;
 WebServer web_server(WEB_PORT);
 
 ApiWebServer api_server(app);
@@ -43,6 +42,9 @@ AppPacketHandler packet_handler(app);
 WebSocketServer ws_server(app, packet_handler);
 
 NtpTime ntp_time;
+
+SysConfig *sys_config;
+DNSServer *dns_server;
 
 void animation_loop(void *);
 void service_loop(void *);
@@ -60,22 +62,24 @@ void setup() {
     }
 
     config_storage.begin(&LittleFS);
+    sys_config = &config_storage.get().sys_config;
 
-    config_storage.get().rgb_mode = RGB_MODE;
+    wifi_manager = new WifiManager(sys_config->wifi_ssid, sys_config->wifi_password,
+        sys_config->wifi_connection_check_interval);
 
     analogWriteResolution(DAC_RESOLUTION);
 
-#if RGB_MODE == 1
-    pinMode(LED_R_PIN, OUTPUT);
-    pinMode(LED_G_PIN, OUTPUT);
-    pinMode(LED_B_PIN, OUTPUT);
+#if RGB_MODE_SUPPORT == 1
+    pinMode(sys_config->led_r_pin, OUTPUT);
+    pinMode(sys_config->led_g_pin, OUTPUT);
+    pinMode(sys_config->led_b_pin, OUTPUT);
 
-    digitalWrite(LED_R_PIN, PIN_DISABLED);
-    digitalWrite(LED_G_PIN, PIN_DISABLED);
-    digitalWrite(LED_B_PIN, PIN_DISABLED);
+    digitalWrite(sys_config->led_r_pin, PIN_DISABLED);
+    digitalWrite(sys_config->led_g_pin, PIN_DISABLED);
+    digitalWrite(sys_config->led_b_pin, PIN_DISABLED);
 #else
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, PIN_DISABLED);
+    pinMode(sys_config->led_pin, OUTPUT);
+    digitalWrite(sys_config->led_pin, PIN_DISABLED);
 #endif
 
     global_timer.add_interval(animation_loop, 1000 / 60);
@@ -103,8 +107,8 @@ void animation_loop(void *) {
         case AppState::INITIALIZATION: {
             if (app.config().power) {
                 const auto factor = map16(
-                    (millis() - app.state_change_time) % WIFI_CONNECT_FLASH_TIMEOUT,
-                    WIFI_CONNECT_FLASH_TIMEOUT,
+                    (millis() - app.state_change_time) % sys_config->wifi_connect_flash_timeout,
+                    sys_config->wifi_connect_flash_timeout,
                     DAC_MAX_VALUE
                 );
 
@@ -116,7 +120,7 @@ void animation_loop(void *) {
 
         case AppState::TURNING_ON: {
             uint16_t factor = std::min<unsigned long>(DAC_MAX_VALUE,
-                (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
+                (millis() - app.state_change_time) * DAC_MAX_VALUE / sys_config->power_change_timeout);
             uint16_t brightness = (uint16_t) app.brightness() * ease_cubic16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
             app.set_brightness(brightness);
 
@@ -126,7 +130,7 @@ void animation_loop(void *) {
 
         case AppState::TURNING_OFF: {
             uint16_t factor = DAC_MAX_VALUE - std::min<unsigned long>(DAC_MAX_VALUE,
-                (millis() - app.state_change_time) * DAC_MAX_VALUE / POWER_CHANGE_TIMEOUT);
+                (millis() - app.state_change_time) * DAC_MAX_VALUE / sys_config->power_change_timeout);
             uint16_t brightness = (uint16_t) app.brightness() * ease_cubic16(factor, DAC_MAX_VALUE) / DAC_MAX_VALUE;
             app.set_brightness(brightness);
 
@@ -152,57 +156,84 @@ void service_loop(void *) {
     ++ii;
 #endif
 
-    static ServiceState state = ServiceState::UNINITIALIZED;
+    static auto state = ServiceState::UNINITIALIZED;
 
     switch (state) {
         case ServiceState::UNINITIALIZED:
-            wifi_manager.connect(WIFI_MODE, WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL);
+            wifi_manager->connect(sys_config->wifi_mode, sys_config->wifi_max_connection_attempt_interval);
             state = ServiceState::WIFI_CONNECT;
 
             app.change_state(AppState::INITIALIZATION);
             break;
 
         case ServiceState::WIFI_CONNECT:
-            wifi_manager.handle_connection();
+            wifi_manager->handle_connection();
 
-            if (wifi_manager.state() == WifiManagerState::CONNECTED) {
+            if (wifi_manager->state() == WifiManagerState::CONNECTED) {
                 state = ServiceState::INITIALIZATION;
             }
 
             break;
 
         case ServiceState::INITIALIZATION:
-            if constexpr (WEB_AUTH) {
-                web_server.add_handler(new WebAuthHandler(WEBAUTH_USER, WEBAUTH_PASSWORD));
+            if (sys_config->web_auth) {
+                web_server.add_handler(new WebAuthHandler(sys_config->web_auth_user, sys_config->web_auth_password));
             }
 
-            if constexpr (MQTT) mqtt_server.begin(MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD);
+            if (sys_config->mqtt) {
+                mqtt_server.begin(sys_config->mqtt_host, sys_config->mqtt_port,
+                    sys_config->mqtt_user, sys_config->mqtt_password);
+            }
 
             api_server.begin(web_server);
             ws_server.begin(web_server);
 
             web_server.begin(&LittleFS);
-            ntp_time.begin(TIME_ZONE);
+            ntp_time.begin(sys_config->time_zone);
 
-            ArduinoOTA.setHostname(MDNS_NAME);
+            ArduinoOTA.setHostname(sys_config->mdns_name);
             ArduinoOTA.begin();
 
             app.begin();
+
+            D_PRINT("ESP Ready");
+
+            if (wifi_manager->mode() == WifiMode::AP) {
+                dns_server = new DNSServer();
+                dns_server->start(53, "*", WiFi.softAPIP());
+
+                D_PRINT("Connect to WiFi:");
+                qr_print_wifi_connection(wifi_manager->ssid(), wifi_manager->password());
+            } else {
+                String url = "http://";
+                url += sys_config->mdns_name;
+                url += ".local";
+
+                if (web_server.port() != 80) {
+                    url += ":";
+                    url += web_server.port();
+                }
+
+                D_PRINT("Open WebUI:");
+                qr_print_string(url.c_str());
+            }
 
             app.change_state(AppState::STAND_BY);
             state = ServiceState::STAND_BY;
             break;
 
         case ServiceState::STAND_BY: {
-            ntp_time.update();
-            night_mode_manager.handle_night(ntp_time);
-
+            wifi_manager->handle_connection();
             ArduinoOTA.handle();
-            wifi_manager.handle_connection();
+
+            if (dns_server) dns_server->processNextRequest();
+
+            night_mode_manager.handle_night(ntp_time);
+            if (wifi_manager->mode() == WifiMode::STA) ntp_time.update();
 
             ws_server.handle_incoming_data();
 
-            if constexpr (MQTT) mqtt_server.handle_connection();
+            if (sys_config->mqtt) mqtt_server.handle_connection();
 
             break;
         }

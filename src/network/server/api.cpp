@@ -1,7 +1,5 @@
 #include "api.h"
 
-#include <ArduinoJson.h>
-
 #include "utils/math.h"
 
 
@@ -49,6 +47,6 @@ void ApiWebServer::begin(WebServer &server) {
     });
 }
 
-void ApiWebServer::_on(WebServer &server, const char *uri, WebRequestMethodComposite method, ArRequestHandlerFunction onRequest) {
+void ApiWebServer::_on(WebServer &server, const char *uri, WebRequestMethodComposite method, const ArRequestHandlerFunction &onRequest) {
     server.on((_path + uri).c_str(), method, onRequest);
 }

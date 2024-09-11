@@ -452,6 +452,9 @@ hr {
 
     color: white;
     background: var(--control-gradient-accent);
+
+    pointer-events: none;
+    user-select: none;
 }
 
 :not(.m-top, .section-title) + .m-top {

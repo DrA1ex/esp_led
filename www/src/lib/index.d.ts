@@ -331,6 +331,7 @@ declare module "application.js" {
         time = "time",
         select = "select",
         int = "int",
+        float = "float",
         text = "text",
         password = "password",
         color = "color",
@@ -391,7 +392,7 @@ declare module "application.js" {
         name: string;
     }
 
-    export type SelectListConfig = Record<string, SelectOptionsConfig>
+    export type SelectListConfig = Record<string, SelectOptionsConfig[]>
 
     export interface PropertyMeta {
         prop: PropertyConfig;

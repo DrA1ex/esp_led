@@ -6,8 +6,8 @@
 class NtpTime;
 
 class NightModeManager {
-    const static int32_t FACTOR_FADE_UPDATE_PERIOD_MS = 30;
-    const static int32_t FACTOR_UPDATE_PERIOD_MS = 1000;
+    static constexpr int32_t FACTOR_FADE_UPDATE_PERIOD_MS = 30;
+    static constexpr int32_t FACTOR_UPDATE_PERIOD_MS = 1000;
 
     const Config &_config;
 

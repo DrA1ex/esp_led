@@ -7,18 +7,18 @@
 #define WEB_AUTH                                (1)                     // Use basic auth for non-local connections
 
 #define WIFI_CONNECTION_CHECK_INTERVAL          (5000u)                 // Interval (ms) between Wi-Fi connection check
-#define WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL    (0u)                    // Max time (ms) to wait for Wi-Fi connection before switch to AP mode
+#define WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL    (120000u)               // Max time (ms) to wait for Wi-Fi connection before switch to AP mode
                                                                         // 0 - Newer switch to AP mode
 
 #define MDNS_NAME                               "esp_led"
 
-#define RGB_MODE                                (0u)                    // RGB LED mode
+#define RGB_MODE_SUPPORT                        (1u)                    // RGB LED mode
 
-#if RGB_MODE == 1
+#if RGB_MODE_SUPPORT == 1
 #if ARDUINO_ARCH_ESP32
-#define LED_R_PIN                               (0u)
+#define LED_R_PIN                               (2u)
 #define LED_G_PIN                               (1u)
-#define LED_B_PIN                               (2u)
+#define LED_B_PIN                               (0u)
 #else
 #define LED_R_PIN                               (0u) // D3
 #define LED_G_PIN                               (4u) // D2

@@ -51,8 +51,8 @@ struct __attribute ((packed)) SysConfig {
     float time_zone = TIME_ZONE;
 
     bool web_auth = WEB_AUTH;
-    char web_auth_user[16] = WEBAUTH_USER;
-    char web_auth_password[16] = WEBAUTH_PASSWORD;
+    char web_auth_user[16] = WEB_AUTH_USER;
+    char web_auth_password[16] = WEB_AUTH_PASSWORD;
 
     bool mqtt = MQTT;
     char mqtt_host[32] = MQTT_HOST;

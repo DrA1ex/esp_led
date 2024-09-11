@@ -12,9 +12,8 @@
 
 #define MDNS_NAME                               "esp_led"
 
-#define RGB_MODE_SUPPORT                        (1u)                    // RGB LED mode
+#define RGB_MODE_ENABLED                        (1u)                    // RGB LED mode
 
-#if RGB_MODE_SUPPORT == 1
 #if ARDUINO_ARCH_ESP32
 #define LED_R_PIN                               (2u)
 #define LED_G_PIN                               (1u)
@@ -24,10 +23,8 @@
 #define LED_G_PIN                               (4u) // D2
 #define LED_B_PIN                               (5u) // D1
 #endif
-#else
-#define LED_PIN                                 (1u)
-#endif
 
+#define LED_PIN                                 LED_R_PIN
 
 #define POWER_CHANGE_TIMEOUT                    (1000u)                // Timeout for power change animation
 #define WIFI_CONNECT_FLASH_TIMEOUT              (3000u)

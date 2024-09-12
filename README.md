@@ -1,10 +1,13 @@
 # esp-led
 Smart RGB/LED Control for ESP32/ESP8266
 
+Other: [[RGB LED LAMP](https://github.com/DrA1ex/esp_led_lamp)] [[RELAY](https://github.com/DrA1ex/esp_relay)]
 
 <a href="https://espressif.github.io/esp-launchpad/?flashConfigURL=https://dra1ex.github.io/esp-launchpad/config.toml">
     <img alt="Try it with ESP Launchpad" src="https://espressif.github.io/esp-launchpad/assets/try_with_launchpad.png" width="180">
 </a>
+
+Инструкция на [русском](/README_RU.md).
 
 ## UI
 

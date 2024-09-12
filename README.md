@@ -29,23 +29,41 @@ For RGB connections, the setup is similar, but you will need three separate MOSF
 
 ## Installation
 
-- Install [Platform.IO](https://platformio.org/install):
-- Modify `credentials.h` and optionally `constants.h`
-- Upload filesystem and firmware
+### Web Installer
+
+1. Open the [ESP Launchpad](https://espressif.github.io/esp-launchpad/?flashConfigURL=https://dra1ex.github.io/esp-launchpad/config.toml).
+2. Select **esp-led** and your desired platform.
+
+### Manual Build / OTA
+
+
+1. Install [Platform.IO](https://platformio.org/install):
+2. (Optional) Modify the `credentials.h` file and, if necessary, customize `constants.h`. You can change these parameters later through the Web UI.
+3. Upload filesystem and firmware
+
+**Note:** This repository contains a submodule. Please use the `--recursive` option when cloning.
 
 ```bash
-git clone https://github.com/DrA1ex/esp_led.git
+git clone --recursive https://github.com/DrA1ex/esp_led.git
 cd esp_led
 
+# Make script executable
 chmod +x ./upload_fs.sh
 
-# For ESP32-C3
-pio run -t upload -e esp32-c3-release
-PLATFORM=esp32-c3 ./upload_fs.sh
+# Specify the platform: esp32-c3 or esp8266
+PLATFORM=esp32-c3
 
-# For ESP8266
-pio run -t upload -e esp8266-release
-PLATFORM=esp8266 ./upload_fs.sh
+# Set the environment: debug, release, or ota
+ENV=release
+
+# For OTA: set your ESP's address
+ADDRESS=esp_led.local
+
+# Additional envs if OTA enabled
+if [ "$ENV" = "ota" ]; then OTA=1 else OTA=0 ADDRESS= fi
+
+pio run -t upload -e $PLATFORM-$ENV --upload-port "$ADDRESS"
+./upload_fs.sh --upload-port "$ADDRESS"
 ```
 
 ## Web API

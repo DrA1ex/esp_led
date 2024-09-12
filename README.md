@@ -9,7 +9,7 @@ Other: [[RGB LED LAMP](https://github.com/DrA1ex/esp_led_lamp)] [[RELAY](https:/
     <img alt="Try it with ESP Launchpad" src="https://espressif.github.io/esp-launchpad/assets/try_with_launchpad.png" width="180">
 </a>
 
-Инструкция на [русском](/README_RU.md).
+Инструкция на [русском](/README_RU.MD).
 
 ## UI
 

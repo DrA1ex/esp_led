@@ -24,7 +24,7 @@
 #define LED_B_PIN                               (5u) // D1
 #endif
 
-#define LED_PIN                                 LED_R_PIN
+#define LED_MIN_BRIGHTNESS                      (1u)
 
 #define POWER_CHANGE_TIMEOUT                    (1000u)                // Timeout for power change animation
 #define WIFI_CONNECT_FLASH_TIMEOUT              (3000u)
@@ -39,7 +39,7 @@
 
 #define MQTT_CONVERT_BRIGHTNESS                 (0u)                    // Convert brightness from internal range to [0..100]
 
-#define MQTT_PREFIX                             MDNS_NAME
+#define MQTT_PREFIX                             ""
 #define MQTT_TOPIC_BRIGHTNESS                   MQTT_PREFIX "/brightness"
 #define MQTT_TOPIC_POWER                        MQTT_PREFIX "/power"
 #define MQTT_TOPIC_COLOR                        MQTT_PREFIX "/color"

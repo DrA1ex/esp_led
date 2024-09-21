@@ -15,7 +15,7 @@ export class Packet {
         packet.signature = parser.readUint16();
         packet.requestId = parser.readUint16();
         packet.type = parser.readUint8();
-        packet.size = parser.readUint8();
+        packet.size = parser.readUint16();
         packet.data = new Uint8Array(buffer, parser.position);
 
         return packet;

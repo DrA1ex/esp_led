@@ -79,7 +79,7 @@ pio run -t upload -e $PLATFORM-$ENV --upload-port "$ADDRESS"
 | Топик Команд *              | Топик Уведомлений *            | Тип         | Значения              | Комментарии                          |
 |------------------------|---------------------------|-------------|-----------------------|--------------------------------------|
 | `MQTT_TOPIC_POWER`     | `MQTT_OUT_TOPIC_POWER`    | `uint8_t`   | 0..1                  | Состояние питания: ВКЛ (1) / ВЫКЛ (0) |
-| `MQTT_TOPIC_BRIGHTNESS`| `MQTT_OUT_TOPIC_BRIGHTNESS`| `uint16_t`  | 0..`DAC_MAX_VALUE`    | Уровень яркости, можно переключать на диапазон 0..100 (`MQTT_CONVERT_BRIGHTNESS`) |
+| `MQTT_TOPIC_BRIGHTNESS`| `MQTT_OUT_TOPIC_BRIGHTNESS`| `uint16_t`  | 0..`PWM_MAX_VALUE`    | Уровень яркости, можно переключать на диапазон 0..100 (`MQTT_CONVERT_BRIGHTNESS`) |
 | `MQTT_TOPIC_COLOR`     | `MQTT_OUT_TOPIC_COLOR`    | `uint32_t`  | 0..0xFFFFFF           | Значение цвета (формат RGB) |
 | `MQTT_TOPIC_NIGHT_MODE`| `MQTT_OUT_TOPIC_NIGHT_MODE`| `uint8_t`   | 0..1                  | Состояние ночного режима: ВКЛ (1) / ВЫКЛ (0) |
 

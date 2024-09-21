@@ -45,7 +45,7 @@ export class Config extends AppConfigBase {
         };
 
         this.sysConfig = {
-            mdnsName: parser.readFixedString(16),
+            mdnsName: parser.readFixedString(32),
 
             wifiMode: parser.readUint8(),
             wifiSsid: parser.readFixedString(32),
@@ -67,14 +67,14 @@ export class Config extends AppConfigBase {
             timeZone: parser.readFloat32(),
 
             webAuth: parser.readBoolean(),
-            webAuthUser: parser.readFixedString(16),
-            webAuthPassword: parser.readFixedString(16),
+            webAuthUser: parser.readFixedString(32),
+            webAuthPassword: parser.readFixedString(32),
 
             mqtt: parser.readBoolean(),
             mqttHost: parser.readFixedString(32),
             mqttPort: parser.readUint16(),
-            mqttUser: parser.readFixedString(16),
-            mqttPassword: parser.readFixedString(16),
+            mqttUser: parser.readFixedString(32),
+            mqttPassword: parser.readFixedString(32),
             mqttConvertBrightness: parser.readBoolean(),
         };
 

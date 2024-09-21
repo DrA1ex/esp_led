@@ -106,7 +106,22 @@ export class ApplicationBase extends EventEmitter {
 
         this.subscribe(this, this.Event.Notification, (_, {key, value}) => {
             this.config.setProperty(key, value, false);
-            this.propertyMeta[key].control.setValue(this.config.getProperty(key));
+
+            const {control, title, prop} = this.propertyMeta[key];
+            if (prop.type === "skip") return;
+
+            const propValue = this.config.getProperty(key);
+            if ("setValue" in control) {
+                control.setValue(propValue);
+            } else if ("setText" in control) {
+                control.setText(propValue);
+            }
+
+            if (prop.visibleIf) {
+                const visible = !!this.config.getProperty(prop.visibleIf);
+                control.setVisibility(visible);
+                title?.setVisibility(true);
+            }
         });
     }
 
@@ -178,29 +193,32 @@ export class ApplicationBase extends EventEmitter {
                 if (prop.visibleIf) {
                     if (config.getProperty(prop.visibleIf)) {
                         control.setVisibility(true);
-                        title.setVisibility(true);
+                        title?.setVisibility(true);
                     } else {
                         control.setVisibility(false);
-                        title.setVisibility(false);
+                        title?.setVisibility(false);
+
+                        control.setAttribute("data-loading", false);
                         continue;
                     }
                 }
 
-                // TODO:
                 if (prop.type === "select") {
                     control.setOptions(this.config.lists[prop.list].map(v => ({key: v.code, label: v.name})));
                 }
 
-                if (prop.type !== "button") {
+                if (control instanceof ButtonControl && prop.cmd) {
+                    control.setOnClick(() => this.#sendCommand(prop));
+                } else if ("setValue" in control) {
                     const value = config.getProperty(prop.key);
                     control.setValue(value);
+                } else if (prop.type === "label") {
+                    const value = config.getProperty(prop.key);
+                    control.setText(value);
                 }
 
-                if (control.getAttribute("data-loading") === "true") {
-                    if ("setOnChange" in control) control.setOnChange((value) => config.setProperty(prop.key, value));
-
-                    control.setAttribute("data-loading", false);
-                }
+                control.setAttribute("data-loading", false);
+                if ("setOnChange" in control) control.setOnChange((value) => config.setProperty(prop.key, value));
             }
         }
     }
@@ -331,6 +349,11 @@ export class ApplicationBase extends EventEmitter {
                         control.setText(prop.label);
                         break;
 
+                    case "label":
+                        control = new TextControl(document.createElement("h4"));
+                        control.addClass("label");
+                        break;
+
                     case "separator":
                         control = new FrameControl(document.createElement("hr"));
                         break;
@@ -412,6 +435,24 @@ export class ApplicationBase extends EventEmitter {
         return titleElement;
     }
 
+    async #sendCommand(prop) {
+        if (prop.__busy) return;
+
+        const {control} = this.propertyMeta[prop.key];
+
+        prop.__busy = true;
+        control.setAttribute("data-saving", true);
+
+        try {
+            await this.#ws.request(prop.cmd);
+        } catch (e) {
+            console.error("Unable to send command", e);
+        } finally {
+            prop.__busy = false;
+            control.setAttribute("data-saving", false);
+        }
+    }
+
     async #sendChangesImpl(config, prop, value, oldValue) {
         if (prop.__busy) {
             return FunctionUtils.ThrottleDelay;
@@ -421,7 +462,7 @@ export class ApplicationBase extends EventEmitter {
 
         prop.__busy = true;
         try {
-            if (prop.type !== "wheel") control.setAttribute("data-saving", "true");
+            if (!["wheel", "color"].includes(prop.type)) control.setAttribute("data-saving", "true");
 
             if (Array.isArray(prop.cmd)) {
                 await this.#ws.request(value ? prop.cmd[0] : prop.cmd[1]);
@@ -479,10 +520,7 @@ export class ApplicationBase extends EventEmitter {
                 serializeFn.call(view, 0, value, true);
 
                 await this.#ws.request(prop.cmd, req.buffer);
-
-                if (prop.type !== "wheel") {
-                    control.setValue(value);
-                }
+                control.setValue(value);
             }
 
             console.log(`Changed '${prop.key}': '${oldValue}' -> '${value}'`);
@@ -491,7 +529,7 @@ export class ApplicationBase extends EventEmitter {
             control.setValue(oldValue);
         } finally {
             prop.__busy = false;
-            if (prop.type !== "wheel") control.setAttribute("data-saving", "false");
+            if (!["wheel", "color"].includes(prop.type)) control.setAttribute("data-saving", "false");
         }
     }
 }

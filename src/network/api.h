@@ -2,8 +2,9 @@
 
 #include "lib/network/web.h"
 
-#include "app/application.h"
 #include "utils/network.h"
+
+class Application;
 
 class ApiWebServer {
     Application &_app;

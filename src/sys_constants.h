@@ -20,11 +20,14 @@
 #define PIN_DISABLED                            (LOW)
 #define PIN_ENABLED                             (HIGH)
 
-#define DAC_RESOLUTION                          (14u)
-#define DAC_MAX_VALUE                           ((uint16_t)((1u << DAC_RESOLUTION) - 1))
+#define PWM_RESOLUTION                          (14u)
+#define PWM_MAX_VALUE                           ((uint16_t)((1u << PWM_RESOLUTION) - 1))
 
 #define NTP_UPDATE_INTERVAL                     (24ul * 3600 * 1000)
 
 #define GAMMA                                   (2.2f)
 
 #define RESTART_DELAY                           (500u)
+#define APP_LOOP_INTERVAL                       (10u)
+
+#define CONFIG_STRING_SIZE                      (32u)

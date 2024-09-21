@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.h"
+#include "app/config.h"
 #include "lib/debug.h"
 
 class NtpTime;

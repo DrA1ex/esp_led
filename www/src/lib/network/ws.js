@@ -130,9 +130,10 @@ export class WebSocketInteraction extends EventEmitter {
         if (buffer) {
             if (buffer.byteLength > 255) throw new Error("Request payload too long!");
 
-            this.#ws.send(Uint8Array.of(...this.config.requestSignature, ...requestIdBytes, cmd, buffer.byteLength, ...new Uint8Array(buffer)));
+            const requestLengthBytes = new Uint8Array(Uint16Array.of(buffer.byteLength).buffer);
+            this.#ws.send(Uint8Array.of(...this.config.requestSignature, ...requestIdBytes, cmd, ...requestLengthBytes, ...new Uint8Array(buffer)));
         } else {
-            this.#ws.send(Uint8Array.of(...this.config.requestSignature, ...requestIdBytes, cmd, 0x00));
+            this.#ws.send(Uint8Array.of(...this.config.requestSignature, ...requestIdBytes, cmd, 0x00, 0x00));
         }
 
         return new Promise((resolve, reject) => {

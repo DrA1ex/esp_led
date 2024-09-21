@@ -76,7 +76,7 @@ pio run -t upload -e $PLATFORM-$ENV --upload-port "$ADDRESS"
 | Endpoint             | Method    | Parameters               | Response                                                  | Description                                             |
 |----------------------|-----------|--------------------------|-----------------------------------------------------------|---------------------------------------------------------|
 | `/api/status`        | `GET`     | None                     | `{"status": "ok", "value": number, "brightness": number}` | Retrieves the current power and brightness values.      |
-| `/api/power`         | `GET`     | `value` (1 or 0)         | {"status": "ok"}                                          | Sets the power state (on/off).                          |
+| `/api/power`         | `GET`     | `value` (1 or 0)         | {"status": "ok"}                                          | Sets the power _state (on/off).                          |
 | `/api/brightness`    | `GET`     | `value` (0-100)          | {"status": "ok"}                                          | Updates the brightness level.                           |
 | `/api/debug`         | `GET`     | None                     | Plain Text                                                | Provides debugging information.                         |
 | `/api/restart`       | `GET`     | None                     | Plain Text: "OK"                                          | Restarts the server and saves configuration.            |
@@ -86,10 +86,10 @@ pio run -t upload -e $PLATFORM-$ENV --upload-port "$ADDRESS"
 
 | Topic In *       			| Topic Out *          			| Type        | Values		         | Comments                              |
 |---------------------------|-------------------------------|-------------|----------------------|---------------------------------------|
-| `MQTT_TOPIC_POWER`		| `MQTT_OUT_TOPIC_POWER` 		| `uint8_t`   | 0..1      	     	 | Power state: ON (1) / OFF (0)         |
-| `MQTT_TOPIC_BRIGHTNESS`	| `MQTT_OUT_TOPIC_BRIGHTNESS` 	| `uint16_t`  | 0..`DAC_MAX_VALUE`   | Brightness level, can switch to 0..100 (`MQTT_CONVERT_BRIGHTNESS`) 	|
+| `MQTT_TOPIC_POWER`		| `MQTT_OUT_TOPIC_POWER` 		| `uint8_t`   | 0..1      	     	 | Power _state: ON (1) / OFF (0)         |
+| `MQTT_TOPIC_BRIGHTNESS`	| `MQTT_OUT_TOPIC_BRIGHTNESS` 	| `uint16_t`  | 0..`PWM_MAX_VALUE`   | Brightness level, can switch to 0..100 (`MQTT_CONVERT_BRIGHTNESS`) 	|
 | `MQTT_TOPIC_COLOR`		| `MQTT_OUT_TOPIC_COLOR` 		| `uint32_t`  | 0..0xFFFFFF  		 | Color value (ARGB or RGB format)      |
-| `MQTT_TOPIC_NIGHT_MODE`	| `MQTT_OUT_TOPIC_NIGHT_MODE` 	| `uint8_t`   | 0..1          		 | Night mode state: ON (1) / OFF (0)    |
+| `MQTT_TOPIC_NIGHT_MODE`	| `MQTT_OUT_TOPIC_NIGHT_MODE` 	| `uint8_t`   | 0..1          		 | Night mode _state: ON (1) / OFF (0)    |
 
 \* Actual topic values decalred in `constants.h`
 

@@ -6,6 +6,7 @@ export {
 } from "./control/index.js"
 
 export {Packet} from "./network/packet.js"
+export {SystemPacketType} from "./network/cmd.js"
 export {WebSocketInteraction, WebSocketState} from "./network/ws.js"
 
 export {ApplicationBase} from "./application.js"

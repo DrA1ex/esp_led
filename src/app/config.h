@@ -2,48 +2,35 @@
 
 #include <cstdint>
 #include <lib/network/wifi.h>
+#include <lib/utils/enum.h>
 
-#include "constants.h"
 #include "credentials.h"
+#include "constants.h"
 
-enum class AppState {
-    UNINITIALIZED,
-    INITIALIZATION,
-    STAND_BY,
-    TURNING_ON,
-    TURNING_OFF
-};
+MAKE_ENUM_AUTO(AppState, uint8_t,
+               UNINITIALIZED,
+               INITIALIZATION,
+               STAND_BY,
+               TURNING_ON,
+               TURNING_OFF
+);
 
-enum class ServiceState {
-    UNINITIALIZED,
-    WIFI_CONNECT,
-    INITIALIZATION,
-    STAND_BY
-};
+typedef char ConfigString[CONFIG_STRING_SIZE];
 
 struct __attribute ((packed)) SysConfig {
-    char mdns_name[16] {MDNS_NAME};
+    ConfigString mdns_name{MDNS_NAME};
 
     WifiMode wifi_mode = WIFI_MODE;
-    char wifi_ssid[32] {WIFI_SSID};
-    char wifi_password[32] {WIFI_PASSWORD};
+    ConfigString wifi_ssid{WIFI_SSID};
+    ConfigString wifi_password{WIFI_PASSWORD};
 
     uint32_t wifi_connection_check_interval = WIFI_CONNECTION_CHECK_INTERVAL;
     uint32_t wifi_max_connection_attempt_interval = WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL;
 
     bool rgb_mode = RGB_MODE_ENABLED;
-
-    union {
-        struct {
-            uint8_t led_r_pin;
-            uint8_t led_g_pin;
-            uint8_t led_b_pin;
-        };
-
-        struct {
-            uint8_t led_pin;
-        };
-    };
+    uint8_t led_r_pin = LED_R_PIN;
+    uint8_t led_g_pin = LED_G_PIN;
+    uint8_t led_b_pin = LED_B_PIN;
 
     uint16_t led_min_brightness = LED_MIN_BRIGHTNESS;
     uint32_t power_change_timeout = POWER_CHANGE_TIMEOUT;
@@ -52,23 +39,16 @@ struct __attribute ((packed)) SysConfig {
     float time_zone = TIME_ZONE;
 
     bool web_auth = WEB_AUTH;
-    char web_auth_user[16] = WEB_AUTH_USER;
-    char web_auth_password[16] = WEB_AUTH_PASSWORD;
+    ConfigString web_auth_user = WEB_AUTH_USER;
+    ConfigString web_auth_password = WEB_AUTH_PASSWORD;
 
     bool mqtt = MQTT;
-    char mqtt_host[32] = MQTT_HOST;
+    ConfigString mqtt_host = MQTT_HOST;
     uint16_t mqtt_port = MQTT_PORT;
-    char mqtt_user[16] = MQTT_USER;
-    char mqtt_password[16] = MQTT_PASSWORD;
+    ConfigString mqtt_user = MQTT_USER;
+    ConfigString mqtt_password = MQTT_PASSWORD;
 
-    uint8_t mqtt_convert_brightness = MQTT_CONVERT_BRIGHTNESS;
-
-    SysConfig() {
-        led_pin = LED_PIN;
-        led_r_pin = LED_R_PIN;
-        led_g_pin = LED_G_PIN;
-        led_b_pin = LED_B_PIN;
-    }
+    bool mqtt_convert_brightness = MQTT_CONVERT_BRIGHTNESS;
 };
 
 struct __attribute ((packed)) NightModeConfig {
@@ -86,7 +66,7 @@ struct __attribute ((packed)) Config {
     uint32_t color = ~0u; // All colors
     uint32_t calibration = ~0u; // No calibration
 
-    NightModeConfig night_mode {};
+    NightModeConfig night_mode{};
 
-    SysConfig sys_config {};
+    SysConfig sys_config{};
 };

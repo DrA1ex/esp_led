@@ -179,6 +179,8 @@ h4 {
     margin: 0;
     width: 2rem;
     height: 2rem;
+
+    user-select: none;
 }
 
 .section > .lock::after,
@@ -423,6 +425,18 @@ input[type="color"]::-webkit-color-swatch {
     color: transparent;
 }
 
+.label[data-loading=true] {
+    height: 1.5rem;
+    border-radius: 0.25rem;
+
+    pointer-events: none;
+    background-image: linear-gradient(90deg, var(--control-color-1), var(--control-color-2), var(--control-color-1));
+    background-color: var(--control-color-1);
+    background-repeat: no-repeat;
+    background-size: 90% 100%;
+    animation: background-shift linear infinite 2s;
+}
+
 p {
     font-size: 1rem;
     font-weight: 300;
@@ -452,9 +466,6 @@ hr {
 
     color: white;
     background: var(--control-gradient-accent);
-
-    pointer-events: none;
-    user-select: none;
 }
 
 :not(.m-top, .section-title) + .m-top {

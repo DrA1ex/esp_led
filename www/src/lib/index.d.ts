@@ -139,6 +139,7 @@ declare module "misc/binary_parser.js" {
 // network/ws.js
 declare module "network/ws.js" {
     import {EventEmitter} from "misc/event_emitter.js";
+    import {BinaryParser} from "misc/binary_parser.js";
 
     export enum WebSocketState {
         uninitialized = "uninitialized",
@@ -156,7 +157,12 @@ declare module "network/ws.js" {
     class Packet<PacketTypeT> {
         requestId: number;
         type: PacketTypeT | SystemPacketType;
+        signature: number;
+        size: number;
+        data: Uint8Array;
+
         parseString(): string;
+        parser(): BinaryParser;
 
         static parse<PacketTypeT>(buffer: ArrayBuffer): Packet<PacketTypeT>;
     }
@@ -320,7 +326,7 @@ declare module "control/index.js" {
 
 // main module
 declare module "application.js" {
-    import {Control, FrameControl, InputControl, TextControl} from "control/index.js";
+    import {Control, FrameControl, TextControl} from "control/index.js";
     import {WebSocketInteraction, WebSocketConfig} from "network/ws.js";
     import {EventEmitter} from "misc/event_emitter.js";
     import {BinaryParser} from "misc/binary_parser.js";
@@ -331,13 +337,13 @@ declare module "application.js" {
         time = "time",
         select = "select",
         int = "int",
-        float = "float",
         text = "text",
         password = "password",
         color = "color",
         button = "button",
         skip = "skip",
         title = "title",
+        label = "label",
         separator = "separator",
     }
 
@@ -392,12 +398,12 @@ declare module "application.js" {
         name: string;
     }
 
-    export type SelectListConfig = Record<string, SelectOptionsConfig[]>
+    export type SelectListConfig = Record<string, SelectOptionsConfig>
 
     export interface PropertyMeta {
         prop: PropertyConfig;
         title: TextControl;
-        control: Control | InputControl;
+        control: Control;
     }
 
     export interface PropertySectionMeta {

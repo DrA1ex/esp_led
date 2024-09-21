@@ -1,5 +1,6 @@
 import {EventEmitter} from "./misc/event_emitter.js";
 import {BinaryParser} from "./misc/binary_parser.js";
+import {SystemPacketType} from "./network/cmd.js";
 
 
 /**
@@ -19,11 +20,9 @@ export class AppConfigBase extends EventEmitter {
     get propertyMap() { return this.#propertyMap;}
 
     /**
-     * @abstract
-     *
      * @returns {number}
      */
-    get cmd() {throw new Error("Not implemented");}
+    get cmd() {return SystemPacketType.GET_CONFIG;}
 
     /**
      * @abstract
@@ -66,7 +65,7 @@ export class AppConfigBase extends EventEmitter {
         const {data} = await ws.request(this.cmd);
 
         const parser = new BinaryParser(data.buffer, data.byteOffset);
-        this.parse(parser);
+        await this.parse(parser);
 
         this.emitEvent(AppConfigBase.Event.Loaded);
     }

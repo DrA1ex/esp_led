@@ -18,7 +18,7 @@ export const PropertyConfig = [{
     ]
 }, {
     key: "settings", section: "Settings", collapse: "true", props: [
-        {key: "sysConfig.mdnsName", title: "mDNS Name", type: "text", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_MDNS_NAME},
+        {key: "sysConfig.mdnsName", title: "mDNS Name", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_MDNS_NAME},
 
         {type: "title", label: "WiFi"},
         {key: "sysConfig.wifiMode", title: "Mode", type: "select", kind: "Uint8", cmd: PacketType.SYS_CONFIG_WIFI_MODE, list: "wifiMode"},
@@ -49,15 +49,15 @@ export const PropertyConfig = [{
 
         {type: "title", label: "Web Auth"},
         {key: "sysConfig.webAuth", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_WEB_AUTH_ENABLED},
-        {key: "sysConfig.webAuthUser", title: "User", type: "text", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_WEB_AUTH_USER},
-        {key: "sysConfig.webAuthPassword", title: "Password", type: "password", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_WEB_AUTH_PASSWORD},
+        {key: "sysConfig.webAuthUser", title: "User", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_WEB_AUTH_USER},
+        {key: "sysConfig.webAuthPassword", title: "Password", type: "password", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_WEB_AUTH_PASSWORD},
 
         {type: "title", label: "MQTT"},
         {key: "sysConfig.mqtt", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_MQTT_ENABLED},
         {key: "sysConfig.mqttHost", title: "Host", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_MQTT_HOST},
         {key: "sysConfig.mqttPort", title: "Port", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_MQTT_PORT},
-        {key: "sysConfig.mqttUser", title: "User", type: "text", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_MQTT_USER},
-        {key: "sysConfig.mqttPassword", title: "Password", type: "password", kind: "FixedString", maxLength: 16, cmd: PacketType.SYS_CONFIG_MQTT_PASSWORD},
+        {key: "sysConfig.mqttUser", title: "User", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_MQTT_USER},
+        {key: "sysConfig.mqttPassword", title: "Password", type: "password", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_MQTT_PASSWORD},
 
         {type: "title", label: "MQTT Extra"},
         {key: "sysConfig.mqttConvertBrightness", title: "Convert Brightness", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_MQTT_CONVERT_BRIGHTNESS},

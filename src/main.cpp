@@ -6,7 +6,11 @@ Application ApplicationInstance;
 
 void setup() {
 #ifdef DEBUG
+#ifdef ARDUINO_ARCH_ESP32
     Serial.begin(115200);
+#else
+    Serial.begin(74880);
+#endif
 
     {
         auto start_t = millis();

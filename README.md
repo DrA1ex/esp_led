@@ -1,5 +1,5 @@
 # esp-led
-Smart RGB/LED Control for ESP32/ESP8266
+Smart RGB/CCT/LED Control for ESP32/ESP8266
 
 
 Other: [[RGB LED LAMP](https://github.com/DrA1ex/esp_led_lamp)] [[RELAY](https://github.com/DrA1ex/esp_relay)]
@@ -16,7 +16,7 @@ Other: [[RGB LED LAMP](https://github.com/DrA1ex/esp_led_lamp)] [[RELAY](https:/
 ![image](https://github.com/user-attachments/assets/fa4d4f01-f9f8-494a-b6f1-6a08406da38b)
 
 ## Features
-- Support for both White and RGB Lamp (or LED-Strip)
+- Support for White, CCT and RGB Lamp (or LED-Strip)
 - Web/Mobile Application (PWA)
 - Integration with any Smart Home Assistant (such as Alise) via MQTT broker
 - Web Hooks
@@ -30,7 +30,7 @@ This is a basic connection scheme. You can use any pin for the connection (just 
 
 To safeguard your controller, I recommend connecting a 200-ohm resistor between the MOSFET and the controller pin. Additionally, connect the MOSFET's gate to GND using a 10k-ohm resistor to prevent unwanted activation due to induced currents.
 
-For RGB connections, the setup is similar, but you will need three separate MOSFETs for each color channel.
+For RGB/CCT connections, the setup is similar, but you will need three separate MOSFETs for each color channel.
 
 ## Installation
 
@@ -84,12 +84,13 @@ pio run -t upload -e $PLATFORM-$ENV --upload-port "$ADDRESS"
 
 ## MQTT Protocol
 
-| Topic In *       			| Topic Out *          			| Type        | Values		         | Comments                              |
-|---------------------------|-------------------------------|-------------|----------------------|---------------------------------------|
-| `MQTT_TOPIC_POWER`		| `MQTT_OUT_TOPIC_POWER` 		| `uint8_t`   | 0..1      	     	 | Power _state: ON (1) / OFF (0)         |
-| `MQTT_TOPIC_BRIGHTNESS`	| `MQTT_OUT_TOPIC_BRIGHTNESS` 	| `uint16_t`  | 0..`PWM_MAX_VALUE`   | Brightness level, can switch to 0..100 (`MQTT_CONVERT_BRIGHTNESS`) 	|
-| `MQTT_TOPIC_COLOR`		| `MQTT_OUT_TOPIC_COLOR` 		| `uint32_t`  | 0..0xFFFFFF  		 | Color value (ARGB or RGB format)      |
-| `MQTT_TOPIC_NIGHT_MODE`	| `MQTT_OUT_TOPIC_NIGHT_MODE` 	| `uint8_t`   | 0..1          		 | Night mode _state: ON (1) / OFF (0)    |
+| Topic In *       			| Topic Out *          			| Type        | Values		                  | Comments                              |
+|---------------------------|-------------------------------|-------------|-------------------------------|---------------------------------------|
+| `MQTT_TOPIC_POWER`		| `MQTT_OUT_TOPIC_POWER` 		| `uint8_t`   | 0..1      	     	          | Power _state: ON (1) / OFF (0)        |
+| `MQTT_TOPIC_BRIGHTNESS`	| `MQTT_OUT_TOPIC_BRIGHTNESS` 	| `uint16_t`  | 0.. `PWM_MAX_VALUE`            | Brightness level, can switch to 0..100 (`MQTT_CONVERT_BRIGHTNESS`) 	|
+| `MQTT_TOPIC_COLOR`		| `MQTT_OUT_TOPIC_COLOR` 		| `uint32_t`  | 0..0xFFFFFF  		          | Color value (ARGB or RGB format)      |
+| `MQTT_TOPIC_TEMPERATURE`	| `MQTT_OUT_TOPIC_TEMPERATURE` 	| `uint32_t`  | 0.. `LED_TEMPERATURE_MAX_VALUE`| Temperature value                     |
+| `MQTT_TOPIC_NIGHT_MODE`	| `MQTT_OUT_TOPIC_NIGHT_MODE` 	| `uint8_t`   | 0..1          		          | Night mode _state: ON (1) / OFF (0)   |
 
 \* Actual topic values decalred in `constants.h`
 

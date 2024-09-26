@@ -12,14 +12,14 @@
 
 #define MDNS_NAME                               "esp_led"
 
-#define RGB_MODE_ENABLED                        (1u)                    // RGB LED mode
+#define LED_MODE                                (LedType::RGB)
 
 #if ARDUINO_ARCH_ESP32
 #define LED_R_PIN                               (2u)
 #define LED_G_PIN                               (1u)
 #define LED_B_PIN                               (0u)
 #else
-#define LED_R_PIN                               (0u) // D3
+#define LED_R_PIN                               (2u) // D4
 #define LED_G_PIN                               (4u) // D2
 #define LED_B_PIN                               (5u) // D1
 #endif
@@ -43,10 +43,12 @@
 #define MQTT_TOPIC_BRIGHTNESS                   MQTT_PREFIX "/brightness"
 #define MQTT_TOPIC_POWER                        MQTT_PREFIX "/power"
 #define MQTT_TOPIC_COLOR                        MQTT_PREFIX "/color"
+#define MQTT_TOPIC_TEMPERATURE                  MQTT_PREFIX "/temperature"
 #define MQTT_TOPIC_NIGHT_MODE                   MQTT_PREFIX "/night_mode"
 
 #define MQTT_OUT_PREFIX                         MQTT_PREFIX "/out"
 #define MQTT_OUT_TOPIC_BRIGHTNESS               MQTT_OUT_PREFIX "/brightness"
 #define MQTT_OUT_TOPIC_POWER                    MQTT_OUT_PREFIX "/power"
 #define MQTT_OUT_TOPIC_COLOR                    MQTT_OUT_PREFIX "/color"
+#define MQTT_OUT_TOPIC_TEMPERATURE              MQTT_OUT_PREFIX "/temperature"
 #define MQTT_OUT_TOPIC_NIGHT_MODE               MQTT_OUT_PREFIX "/night_mode"

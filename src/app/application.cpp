@@ -113,7 +113,7 @@ void Application::_handle_property_change(const AbstractParameter *parameter) {
 }
 
 void Application::load() {
-    _led->set_brightness(config().power ? config().brightness : PIN_DISABLED);
+    _led->set_brightness(config().power ? _brightness() : PIN_DISABLED);
 
     if (_led->led_type() == LedType::RGB) {
         _led->set_calibration(config().calibration);

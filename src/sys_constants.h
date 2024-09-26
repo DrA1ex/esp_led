@@ -31,3 +31,7 @@
 #define APP_LOOP_INTERVAL                       (10u)
 
 #define CONFIG_STRING_SIZE                      (32u)
+
+#define LED_TEMPERATURE_MAX_VALUE               (PWM_MAX_VALUE * 2 + 1)
+#define LED_MIN_TEMPERATURE                     (2700u)
+#define LED_MAX_TEMPERATURE                     (6000u)

@@ -363,24 +363,100 @@ declare module "application.js" {
         NullTerminatedString = "NullTerminatedString",
     }
 
-    // TODO: separate types
-    export interface PropertyConfig {
+    export interface BaseConfig {
         key: string;
-        type: keyof typeof ControlType;
+        type: string;
         title?: string;
-        cmd?: [number, number] | number;
-        min?: number;
-        limit?: number;
-        kind?: keyof typeof PropertyKind;
-        label?: string;
-        maxLength?: number;
-        list?: number;
-        transform?: (value: any) => any;
-        default?: any,
         visibleIf?: string;
-        displayConverter?: (value: any) => string;
         extra?: { m_top?: boolean };
     }
+
+    export interface CommandBaseConfig extends BaseConfig {
+        cmd: [number, number] | number;
+        kind: keyof typeof PropertyKind;
+    }
+
+    export interface TriggerConfig extends CommandBaseConfig {
+        type: "trigger";
+    }
+
+    export interface WheelConfig extends CommandBaseConfig {
+        type: "wheel";
+        limit: number;
+        min?: number;
+        anchor?: number;
+        anchorAmount?: number;
+        displayConverter: (value: number) => string;
+    }
+
+    export interface TimeConfig extends CommandBaseConfig {
+        type: "time";
+    }
+
+    export interface SelectConfig extends CommandBaseConfig {
+        type: "select";
+        list: number;
+    }
+
+    export interface IntConfig extends CommandBaseConfig {
+        type: "int";
+        min?: number;
+        limit?: number;
+    }
+
+    export interface TextConfig extends CommandBaseConfig {
+        type: "text";
+        maxLength: number;
+    }
+
+    export interface PasswordConfig extends CommandBaseConfig {
+        type: "password";
+        maxLength: number;
+    }
+
+    export interface ColorConfig extends CommandBaseConfig {
+        type: "color";
+    }
+
+    export interface ButtonConfig extends CommandBaseConfig {
+        type: "button";
+        label: string;
+    }
+
+    export interface LabelConfig extends CommandBaseConfig {
+        type: "label";
+        label: string;
+    }
+
+    export interface SkipConfig {
+        key: string,
+        type: "skip";
+    }
+
+    export interface TitleConfig extends BaseConfig {
+        type: "title";
+        label: string;
+    }
+
+    export interface SeparatorConfig {
+        type: "separator";
+    }
+
+// Union type
+    export type PropertyConfig =
+        | TriggerConfig
+        | WheelConfig
+        | TimeConfig
+        | SelectConfig
+        | IntConfig
+        | TextConfig
+        | PasswordConfig
+        | ColorConfig
+        | ButtonConfig
+        | SkipConfig
+        | TitleConfig
+        | LabelConfig
+        | SeparatorConfig;
 
     export interface SectionConfig {
         key: string;

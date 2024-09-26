@@ -1,5 +1,5 @@
 /**
- * @enum {Number}
+ * @type {Record<String, Number>}
  */
 export const PacketType = {
     POWER: 0x01,
@@ -7,6 +7,7 @@ export const PacketType = {
 
     COLOR: 0x10,
     CALIBRATION: 0x11,
+    TEMPERATURE: 0x12,
 
     NIGHT_MODE_ENABLED: 0x20,
     NIGHT_MODE_START: 0x21,
@@ -21,7 +22,7 @@ export const PacketType = {
     SYS_CONFIG_WIFI_CONNECTION_CHECK_INTERVAL: 0x64,
     SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL: 0x65,
 
-    SYS_RGB_MODE: 0x66,
+    SYS_LED_TYPE: 0x66,
     SYS_CONFIG_LED_R_PIN: 0x67,
     SYS_CONFIG_LED_G_PIN: 0x68,
     SYS_CONFIG_LED_B_PIN: 0x69,
@@ -42,6 +43,8 @@ export const PacketType = {
     SYS_CONFIG_MQTT_CONVERT_BRIGHTNESS: 0x75,
 
     SYS_CONFIG_LED_MIN_BRIGHTNESS: 0x76,
+    SYS_CONFIG_LED_MIN_TEMPERATURE: 0x77,
+    SYS_CONFIG_LED_MAX_TEMPERATURE: 0x78,
 
     GET_CONFIG: 0xa0,
 

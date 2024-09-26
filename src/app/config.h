@@ -15,6 +15,12 @@ MAKE_ENUM_AUTO(AppState, uint8_t,
     TURNING_OFF
 );
 
+enum class LedType: uint8_t {
+    SINGLE = 0,
+    RGB    = 1,
+    CCT    = 2,
+};
+
 typedef char ConfigString[CONFIG_STRING_SIZE];
 
 struct __attribute ((packed)) SysConfig {
@@ -27,12 +33,15 @@ struct __attribute ((packed)) SysConfig {
     uint32_t wifi_connection_check_interval = WIFI_CONNECTION_CHECK_INTERVAL;
     uint32_t wifi_max_connection_attempt_interval = WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL;
 
-    bool rgb_mode = RGB_MODE_ENABLED;
+    LedType led_type = LED_MODE;
     uint8_t led_r_pin = LED_R_PIN;
     uint8_t led_g_pin = LED_G_PIN;
     uint8_t led_b_pin = LED_B_PIN;
 
     uint16_t led_min_brightness = LED_MIN_BRIGHTNESS;
+    uint16_t led_min_temperature = LED_MIN_TEMPERATURE;
+    uint16_t led_max_temperature = LED_MAX_TEMPERATURE;
+
     uint32_t power_change_timeout = POWER_CHANGE_TIMEOUT;
     uint32_t wifi_connect_flash_timeout = WIFI_CONNECT_FLASH_TIMEOUT;
 
@@ -65,6 +74,8 @@ struct __attribute ((packed)) Config {
 
     uint32_t color = ~0u;       // All colors
     uint32_t calibration = ~0u; // No calibration
+
+    uint16_t color_temperature = PWM_MAX_VALUE;
 
     NightModeConfig night_mode{};
 

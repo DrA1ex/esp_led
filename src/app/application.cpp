@@ -1,5 +1,7 @@
 #include "application.h"
 
+#include <utils/color.h>
+
 void Application::begin() {
     D_PRINT("Starting application...");
 
@@ -23,9 +25,10 @@ void Application::begin() {
         .mqtt_password = sys_config.mqtt_password,
     });
 
-    if (sys_config.rgb_mode) {
-        _led = std::make_unique<LedController>(
-            sys_config.led_r_pin, sys_config.led_g_pin, sys_config.led_b_pin);
+    if (sys_config.led_type == LedType::RGB) {
+        _led = std::make_unique<LedController>(sys_config.led_r_pin, sys_config.led_g_pin, sys_config.led_b_pin);
+    } else if (sys_config.led_type == LedType::CCT) {
+        _led = std::make_unique<LedController>(sys_config.led_r_pin, sys_config.led_g_pin);
     } else {
         _led = std::make_unique<LedController>(sys_config.led_r_pin);
     }
@@ -91,6 +94,16 @@ void Application::_handle_property_change(const AbstractParameter *parameter) {
     auto type = it->second;
     if (type == PacketType::POWER) {
         set_power(config().power);
+    } else if (type == PacketType::TEMPERATURE) {
+        if (_led->led_type() == LedType::RGB) {
+            uint32_t kelvin = sys_config().led_min_temperature + config().color_temperature *
+                (sys_config().led_max_temperature - sys_config().led_min_temperature) / LED_TEMPERATURE_MAX_VALUE;
+
+            config().color = temperature_to_rgb(kelvin);
+            NotificationBus::get().notify_parameter_changed(this, _metadata->color.get_parameter());
+        }
+
+        update();
     } else if (type >= PacketType::NIGHT_MODE_ENABLED && type <= PacketType::NIGHT_MODE_BRIGHTNESS) {
         _night_mode_manager->reset();
         update();
@@ -102,9 +115,11 @@ void Application::_handle_property_change(const AbstractParameter *parameter) {
 void Application::load() {
     _led->set_brightness(config().power ? config().brightness : PIN_DISABLED);
 
-    if (_led->rgb_mode()) {
+    if (_led->led_type() == LedType::RGB) {
         _led->set_calibration(config().calibration);
         _led->set_color(config().color);
+    } else if (_led->led_type() == LedType::CCT) {
+        _led->set_temperature(config().color_temperature);
     }
 }
 

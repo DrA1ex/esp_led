@@ -131,6 +131,11 @@ export class ApplicationBase extends EventEmitter {
 
         this.#ws.begin();
 
+        window.__app = {
+            app: this,
+            ws: this.#ws
+        }
+
         document.addEventListener("visibilitychange", () => {
             console.log("Hidden", document.hidden);
 
@@ -264,7 +269,9 @@ export class ApplicationBase extends EventEmitter {
 
     #refreshProperty(type, parser) {
         const property = Object.values(this.propertyMeta)
-            .find(p => p.prop.cmd instanceof Array ? p.prop.cmd.includes(type) : p.prop.cmd === type);
+            .find(p =>
+                p.prop.cmd instanceof Array ? p.prop.cmd.includes(type) : p.prop.cmd === type
+                    && (p.prop.visibleIf ? this.config.getProperty(p.prop.visibleIf) : true));
 
         if (!property) return console.error("Trying to refresh unknown property", type);
 
@@ -307,6 +314,9 @@ export class ApplicationBase extends EventEmitter {
 
                     case "wheel":
                         control = new WheelControl(document.createElement("div"), prop.limit);
+                        if (prop.displayConverter) control.setDisplayConverter(prop.displayConverter);
+                        if (prop.anchor) control.setAnchor(prop.anchor);
+                        if (prop.anchorAmount) control.setAnchorAmount(prop.anchorAmount);
                         break;
 
                     case "time":
@@ -367,7 +377,6 @@ export class ApplicationBase extends EventEmitter {
 
                 if (control) {
                     if (prop.key) control.setAttribute("data-loading", true);
-                    if (prop.displayConverter) control.setDisplayConverter(prop.displayConverter);
 
                     if (prop.extra?.m_top) {
                         if (title) {

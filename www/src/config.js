@@ -13,8 +13,12 @@ export class Config extends AppConfigBase {
 
     sysConfig;
 
-    rgbMode;
+    ledType;
     singleLedMode
+    rgbMode;
+    cctMode;
+
+    showTemperature;
 
     constructor() {
         super(PropertyConfig);
@@ -23,6 +27,12 @@ export class Config extends AppConfigBase {
             {code: 0, name: "AP"},
             {code: 1, name: "STA"},
         ];
+
+        this.lists["ledType"] = [
+            {code: 0, name: "Single"},
+            {code: 1, name: "RGB"},
+            {code: 2, name: "CCT"},
+        ]
     }
 
     get cmd() {return PacketType.GET_CONFIG;}
@@ -34,6 +44,7 @@ export class Config extends AppConfigBase {
 
         this.color = parser.readUint32();
         this.calibration = parser.readUint32();
+        this.colorTemperature = parser.readUint16();
 
         this.nightMode = {
             enabled: parser.readBoolean(),
@@ -54,13 +65,16 @@ export class Config extends AppConfigBase {
             wifiConnectionCheckInterval: parser.readUint32(),
             wifiMaxConnectionAttemptInterval: parser.readUint32(),
 
-            rgbMode: this.rgbMode = parser.readBoolean(),
+            ledType: this.ledType = parser.readUint8(),
 
             ledRPin: parser.readUint8(),
             ledGPin: parser.readUint8(),
             ledBPin: parser.readUint8(),
 
             ledMinBrightness: parser.readUint16(),
+            ledMinTemperature: parser.readUint16(),
+            ledMaxTemperature: parser.readUint16(),
+
             powerChangeTimeout: parser.readUint32(),
             wifiConnectFlashTimeout: parser.readUint32(),
 
@@ -78,7 +92,16 @@ export class Config extends AppConfigBase {
             mqttConvertBrightness: parser.readBoolean(),
         };
 
+        this.singleLedMode = this.ledType === 0;
         this.sysConfig.ledPin = this.sysConfig.ledRPin;
-        this.singleLedMode = !this.rgbMode;
+
+        this.rgbMode = this.ledType === 1;
+        this.colorTemperatureRgb = this.colorTemperature;
+
+        this.cctMode = this.ledType === 2;
+        this.sysConfig.ledCPin = this.sysConfig.ledRPin;
+        this.sysConfig.ledWPin = this.sysConfig.ledGPin;
+
+        this.showTemperature = !this.singleLedMode;
     }
 }

@@ -3,10 +3,49 @@ import {PacketType} from "./cmd.js";
 /**@type {PropertiesConfig} */
 export const PropertyConfig = [{
     key: "general", section: "General", props: [
+        {key: "singleLedMode", type: "skip"},
+        {key: "rgbMode", type: "skip"},
+        {key: "cctMode", type: "skip"},
+        {key: "showTemperature", type: "skip"},
+
         {key: "power", title: "Power", type: "trigger", kind: "Boolean", cmd: PacketType.POWER},
         {key: "brightness", title: "Brightness", type: "wheel", limit: 16383, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
+
         {key: "color", title: "Color", type: "color", kind: "Uint32", cmd: PacketType.COLOR, visibleIf: "rgbMode"},
         {key: "calibration", title: "Calibration", type: "color", kind: "Uint32", cmd: PacketType.CALIBRATION, visibleIf: "rgbMode"},
+
+        {
+            key: "colorTemperature", title: "Color Temperature", type: "wheel", limit: 32767, kind: "Uint16", cmd: PacketType.TEMPERATURE,
+            anchor: 16383, anchorAmount: 0.02, visibleIf: "cctMode",
+            displayConverter: function (value) {
+                const percent = value / this.limit * 100;
+                let converted;
+                if (percent < 50) {
+                    converted = (percent - 50);
+                } else {
+                    converted = (percent - 50);
+                }
+
+
+                let [int, fraction] = converted.toFixed(1).split(".");
+                if (converted > 0) int = `+${int}`;
+                if(int === "-0") int = "0";
+
+                return fraction === "0" ? int : [int, `.${fraction}`];
+            }
+        },
+
+        {
+            key: "colorTemperatureRgb", title: "Color Temperature", type: "wheel", limit: 32767, kind: "Uint16", cmd: PacketType.TEMPERATURE,
+            visibleIf: "rgbMode",
+            displayConverter: function (value) {
+                const {sysConfig: {ledMinTemperature, ledMaxTemperature}} = window.__app.app.config
+
+                const factor = value / this.limit;
+                const result = ledMinTemperature + (ledMaxTemperature - ledMinTemperature) * factor;
+                return result.toFixed(0);
+            }
+        },
     ],
 }, {
     key: "night_mode", section: "Night Mode", collapse: true, props: [
@@ -30,17 +69,23 @@ export const PropertyConfig = [{
         {key: "sysConfig.wifiMaxConnectionAttemptInterval", title: "Max Connection Attempt Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL},
 
         {type: "title", label: "LED"},
-        {key: "rgbMode", title: "RGB Mode", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_RGB_MODE},
+        {key: "ledType", title: "LED Type", type: "select", kind: "Uint8", cmd: PacketType.SYS_LED_TYPE, list: "ledType"},
 
         {key: "sysConfig.ledRPin", title: "Red Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_R_PIN, visibleIf: "rgbMode"},
         {key: "sysConfig.ledGPin", title: "Green Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_G_PIN, visibleIf: "rgbMode"},
         {key: "sysConfig.ledBPin", title: "Blue Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_B_PIN, visibleIf: "rgbMode"},
 
-        {key: "singleLedMode", type: "skip"},
+        {key: "sysConfig.ledWPin", title: "Warm Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_R_PIN, visibleIf: "cctMode"},
+        {key: "sysConfig.ledCPin", title: "Cold Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_G_PIN, visibleIf: "cctMode"},
+
         {key: "sysConfig.ledPin", title: "Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_LED_R_PIN, visibleIf: "singleLedMode"},
 
         {type: "title", label: "LED EXTRA"},
+        {key: "sysConfig.ledMinTemperature", title: "Min Temperature", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MIN_TEMPERATURE, visibleIf: "showTemperature"},
+        {key: "sysConfig.ledMaxTemperature", title: "Max Temperature", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MAX_TEMPERATURE, visibleIf: "showTemperature"},
         {key: "sysConfig.ledMinBrightness", title: "Min Brightness", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MIN_BRIGHTNESS},
+
+        {type: "title", label: "SYSTEM EXTRA"},
         {key: "sysConfig.powerChangeTimeout", title: "Power Change Timeout", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_POWER_CHANGE_TIMEOUT},
         {key: "sysConfig.wifiConnectFlashTimeout", title: "WiFi Connect Flash Timeout", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_CONNECT_FLASH_TIMEOUT},
 

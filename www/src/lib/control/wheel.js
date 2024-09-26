@@ -8,6 +8,8 @@ export class WheelControl extends InputControlBase {
     #fractionPartElement;
 
     #displayConverter = null;
+    #anchorPosition = null;
+    #anchorAmount = 0.01;
 
     #active = false;
     #width = 0;
@@ -59,7 +61,7 @@ export class WheelControl extends InputControlBase {
 
         let result;
         if (this.#displayConverter) {
-            result = this.#displayConverter(value) ?? this.#defaultDisplayConverter(value);
+            result = this.#displayConverter.call(this, value) ?? this.#defaultDisplayConverter(value);
         } else {
             result = this.#defaultDisplayConverter(value);
         }
@@ -79,6 +81,14 @@ export class WheelControl extends InputControlBase {
 
     setDisplayConverter(fn) {
         this.#displayConverter = fn;
+    }
+
+    setAnchor(value) {
+        this.#anchorPosition = value / this.limit;
+    }
+
+    setAnchorAmount(value) {
+        this.#anchorAmount = Math.min(0.5, Math.max(value, 0));
     }
 
     #defaultDisplayConverter() {
@@ -107,7 +117,11 @@ export class WheelControl extends InputControlBase {
         if (!this.#active) return;
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const pos = (clientX - this.#left) / this.#width;
+        let pos = (clientX - this.#left) / this.#width;
+
+        if (this.#anchorPosition && Math.abs(this.#anchorPosition - pos) < this.#anchorAmount) {
+            pos = this.#anchorPosition;
+        }
 
         const newPos = Math.max(0, Math.min(1, pos));
         const newValue = Math.round(newPos * this.limit);

@@ -4,38 +4,9 @@
 #include <lib/utils/metadata.h>
 
 #include "app/config.h"
+#include "app/parameters.h"
 #include "network/cmd.h"
-#include "utils/math.h"
 
-class BrightnessParameter : public Parameter<uint16_t> {
-    const SysConfig &_config;
-
-public:
-    BrightnessParameter(uint16_t *value, const SysConfig &config) : Parameter(value), _config(config) {}
-
-    bool parse(const String &data) override {
-        if (_config.mqtt_convert_brightness) {
-            if (data.length() == 0) return false;
-
-            uint16_t value = map16(data.toInt(), 100, PWM_MAX_VALUE);
-            Parameter::set_value(&value, sizeof(value));
-            return true;
-        }
-
-        return Parameter::parse(data);
-    }
-
-    [[nodiscard]] String to_string() const override {
-        if (_config.mqtt_convert_brightness) {
-            uint16_t value;
-            memcpy(&value, Parameter::get_value(), sizeof(value));
-            auto converted = map16(value, PWM_MAX_VALUE, 100);
-            return String(converted);
-        }
-
-        return Parameter::to_string();
-    }
-};
 
 DECLARE_META_TYPE(AppMetaProperty, PacketType)
 
@@ -54,11 +25,13 @@ DECLARE_META(SysConfigMeta, AppMetaProperty,
     MEMBER(FixedString, wifi_password),
     MEMBER(Parameter<uint32_t>, wifi_connection_check_interval),
     MEMBER(Parameter<uint32_t>, wifi_max_connection_attempt_interval),
-    MEMBER(Parameter<bool>, rgb_mode),
+    MEMBER(Parameter<uint8_t>, led_type),
     MEMBER(Parameter<uint8_t>, led_r_pin),
     MEMBER(Parameter<uint8_t>, led_g_pin),
     MEMBER(Parameter<uint8_t>, led_b_pin),
     MEMBER(Parameter<uint16_t>, led_min_brightness),
+    MEMBER(Parameter<uint16_t>, led_min_temperature),
+    MEMBER(Parameter<uint16_t>, led_max_temperature),
     MEMBER(Parameter<uint32_t>, power_change_timeout),
     MEMBER(Parameter<uint32_t>, wifi_connect_flash_timeout),
     MEMBER(Parameter<float>, time_zone),
@@ -82,6 +55,7 @@ DECLARE_META(ConfigMetadata, AppMetaProperty,
     MEMBER(BrightnessParameter, brightness),
     MEMBER(Parameter<uint32_t>, color),
     MEMBER(Parameter<uint32_t>, calibration),
+    MEMBER(TemperatureParameter, color_temperature),
     SUB_TYPE(NightModeConfigMeta, night_mode),
     SUB_TYPE(SysConfigMeta, sys_config),
 
@@ -98,7 +72,7 @@ inline ConfigMetadata build_metadata(Config &config) {
         .brightness = {
             PacketType::BRIGHTNESS,
             MQTT_TOPIC_BRIGHTNESS, MQTT_OUT_TOPIC_BRIGHTNESS,
-            BrightnessParameter(&config.brightness, config.sys_config)
+            {&config.brightness, config.sys_config}
         },
         .color = {
             PacketType::COLOR,
@@ -108,6 +82,11 @@ inline ConfigMetadata build_metadata(Config &config) {
         .calibration = {
             PacketType::CALIBRATION,
             &config.calibration
+        },
+        .color_temperature = {
+            PacketType::TEMPERATURE,
+            MQTT_TOPIC_TEMPERATURE,MQTT_OUT_TOPIC_TEMPERATURE,
+            {&config.color_temperature, config.sys_config}
         },
         .night_mode = {
             .enabled = {
@@ -157,9 +136,9 @@ inline ConfigMetadata build_metadata(Config &config) {
                 PacketType::SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL,
                 &config.sys_config.wifi_max_connection_attempt_interval
             },
-            .rgb_mode = {
-                PacketType::SYS_RGB_MODE,
-                &config.sys_config.rgb_mode
+            .led_type = {
+                PacketType::SYS_LED_TYPE,
+                (uint8_t *) &config.sys_config.led_type
             },
             .led_r_pin = {
                 PacketType::SYS_CONFIG_LED_R_PIN,
@@ -176,6 +155,14 @@ inline ConfigMetadata build_metadata(Config &config) {
             .led_min_brightness = {
                 PacketType::SYS_CONFIG_LED_MIN_BRIGHTNESS,
                 &config.sys_config.led_min_brightness
+            },
+            .led_min_temperature = {
+                PacketType::SYS_CONFIG_LED_MIN_TEMPERATURE,
+                &config.sys_config.led_min_temperature
+            },
+            .led_max_temperature = {
+                PacketType::SYS_CONFIG_LED_MAX_TEMPERATURE,
+                &config.sys_config.led_max_temperature
             },
             .power_change_timeout = {
                 PacketType::SYS_CONFIG_POWER_CHANGE_TIMEOUT,

@@ -469,9 +469,11 @@ export class ApplicationBase extends EventEmitter {
 
         const {control} = this.propertyMeta[prop.key];
 
+        const dataSavingMode = !["wheel", "color"].includes(prop.type);
+
         prop.__busy = true;
         try {
-            if (!["wheel", "color"].includes(prop.type)) control.setAttribute("data-saving", "true");
+            if (dataSavingMode) control.setAttribute("data-saving", "true");
 
             if (Array.isArray(prop.cmd)) {
                 await this.#ws.request(value ? prop.cmd[0] : prop.cmd[1]);
@@ -529,7 +531,7 @@ export class ApplicationBase extends EventEmitter {
                 serializeFn.call(view, 0, value, true);
 
                 await this.#ws.request(prop.cmd, req.buffer);
-                control.setValue(value);
+                if (dataSavingMode) control.setValue(value);
             }
 
             console.log(`Changed '${prop.key}': '${oldValue}' -> '${value}'`);
@@ -538,7 +540,7 @@ export class ApplicationBase extends EventEmitter {
             control.setValue(oldValue);
         } finally {
             prop.__busy = false;
-            if (!["wheel", "color"].includes(prop.type)) control.setAttribute("data-saving", "false");
+            if (dataSavingMode) control.setAttribute("data-saving", "false");
         }
     }
 }

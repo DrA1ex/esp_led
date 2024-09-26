@@ -69,7 +69,8 @@ void NightModeManager::_update_next_night_time(const NtpTime &ntp_time) {
 
 void NightModeManager::_update_night_flag(unsigned long now) {
     const bool new_value = now >= _next_start_fade_time && now <= _next_end_fade_time;
-    if (new_value != _is_night) D_PRINT(new_value ? "Night time begin" : "Night time end");
+    if (new_value != _is_night)
+        D_PRINT(new_value ? "Night time begin" : "Night time end");
 
     _is_night = new_value;
 }

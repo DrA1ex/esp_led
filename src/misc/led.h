@@ -16,7 +16,7 @@ class LedController {
     uint32_t _calibration = 0xffffff;
 
 public:
-    LedController(uint8_t pin);
+    explicit LedController(uint8_t pin);
     LedController(uint8_t r_pin, uint8_t g_pin, uint8_t b_pin);
 
     void begin();

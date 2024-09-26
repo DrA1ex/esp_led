@@ -8,11 +8,11 @@
 #include "constants.h"
 
 MAKE_ENUM_AUTO(AppState, uint8_t,
-               UNINITIALIZED,
-               INITIALIZATION,
-               STAND_BY,
-               TURNING_ON,
-               TURNING_OFF
+    UNINITIALIZED,
+    INITIALIZATION,
+    STAND_BY,
+    TURNING_ON,
+    TURNING_OFF
 );
 
 typedef char ConfigString[CONFIG_STRING_SIZE];
@@ -55,7 +55,7 @@ struct __attribute ((packed)) NightModeConfig {
     bool enabled = false;
     uint16_t brightness = 10;
     uint32_t start_time = 0;
-    uint32_t end_time = 10 * 60 * 60; // 22:00
+    uint32_t end_time = 10 * 60 * 60;   // 22:00
     uint16_t switch_interval = 15 * 60; // 15 minutes
 };
 
@@ -63,7 +63,7 @@ struct __attribute ((packed)) Config {
     bool power = true;
     uint16_t brightness = 2048;
 
-    uint32_t color = ~0u; // All colors
+    uint32_t color = ~0u;       // All colors
     uint32_t calibration = ~0u; // No calibration
 
     NightModeConfig night_mode{};

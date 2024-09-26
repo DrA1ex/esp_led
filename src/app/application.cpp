@@ -11,21 +11,21 @@ void Application::begin() {
 
     auto &sys_config = _bootstrap->config().sys_config;
     _bootstrap->begin({
-                              .mdns_name = sys_config.mdns_name,
-                              .wifi_mode = sys_config.wifi_mode,
-                              .wifi_ssid = sys_config.wifi_ssid,
-                              .wifi_password = sys_config.wifi_password,
-                              .wifi_connection_timeout = sys_config.wifi_max_connection_attempt_interval,
-                              .mqtt_enabled = sys_config.mqtt,
-                              .mqtt_host = sys_config.mqtt_host,
-                              .mqtt_port = sys_config.mqtt_port,
-                              .mqtt_user = sys_config.mqtt_user,
-                              .mqtt_password = sys_config.mqtt_password,
-                      });
+        .mdns_name = sys_config.mdns_name,
+        .wifi_mode = sys_config.wifi_mode,
+        .wifi_ssid = sys_config.wifi_ssid,
+        .wifi_password = sys_config.wifi_password,
+        .wifi_connection_timeout = sys_config.wifi_max_connection_attempt_interval,
+        .mqtt_enabled = sys_config.mqtt,
+        .mqtt_host = sys_config.mqtt_host,
+        .mqtt_port = sys_config.mqtt_port,
+        .mqtt_user = sys_config.mqtt_user,
+        .mqtt_password = sys_config.mqtt_password,
+    });
 
     if (sys_config.rgb_mode) {
         _led = std::make_unique<LedController>(
-                sys_config.led_r_pin, sys_config.led_g_pin, sys_config.led_b_pin);
+            sys_config.led_r_pin, sys_config.led_g_pin, sys_config.led_b_pin);
     } else {
         _led = std::make_unique<LedController>(sys_config.led_r_pin);
     }
@@ -158,20 +158,20 @@ void Application::_app_loop() {
         case AppState::INITIALIZATION: {
             if (config().power) {
                 const auto factor = map16(
-                        (millis() - _state_change_time) % sys_config().wifi_connect_flash_timeout,
-                        sys_config().wifi_connect_flash_timeout,
-                        PWM_MAX_VALUE
+                    (millis() - _state_change_time) % sys_config().wifi_connect_flash_timeout,
+                    sys_config().wifi_connect_flash_timeout,
+                    PWM_MAX_VALUE
                 );
 
                 uint16_t brightness = _brightness() * cubic_wave16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
                 _led->set_brightness(brightness);
             }
         }
-            break;
+        break;
 
         case AppState::TURNING_ON: {
             uint16_t factor = std::min<unsigned long>(PWM_MAX_VALUE,
-                                                      (millis() - _state_change_time) * PWM_MAX_VALUE / sys_config().power_change_timeout);
+                (millis() - _state_change_time) * PWM_MAX_VALUE / sys_config().power_change_timeout);
             uint16_t brightness = (uint16_t) _brightness() * ease_cubic16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
             _led->set_brightness(brightness);
 
@@ -181,7 +181,7 @@ void Application::_app_loop() {
 
         case AppState::TURNING_OFF: {
             uint16_t factor = PWM_MAX_VALUE - std::min<unsigned long>(PWM_MAX_VALUE,
-                                                                      (millis() - _state_change_time) * PWM_MAX_VALUE / sys_config().power_change_timeout);
+                (millis() - _state_change_time) * PWM_MAX_VALUE / sys_config().power_change_timeout);
             uint16_t brightness = (uint16_t) _brightness() * ease_cubic16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
             _led->set_brightness(brightness);
 

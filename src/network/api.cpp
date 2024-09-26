@@ -10,9 +10,9 @@ void ApiWebServer::begin(WebServer &server) {
     _on(server, "/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
         auto brightness = map16(_app.config().brightness, PWM_MAX_VALUE, 100);
         response_with_json(request, JsonPropListT{
-                {"status",     "ok"},
-                {"value",      _app.config().power},
-                {"brightness", brightness}
+            {"status", "ok"},
+            {"value", _app.config().power},
+            {"brightness", brightness}
         });
     });
 
@@ -36,7 +36,7 @@ void ApiWebServer::begin(WebServer &server) {
         char result[64] = {};
 
         snprintf(result, sizeof(result), "General:\nHeap: %u\nNow: %lu\n",
-                 ESP.getFreeHeap(), millis());
+            ESP.getFreeHeap(), millis());
 
         request->send_P(200, "text/plain", result);
     });

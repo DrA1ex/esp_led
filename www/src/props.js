@@ -65,4 +65,4 @@ export const PropertyConfig = [{
         {type: "title", label: "Actions", extra: {m_top: true}},
         {key: "apply_sys_config", type: "button", label: "Apply Settings"}
     ],
-},];
+}];

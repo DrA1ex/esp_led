@@ -4,10 +4,10 @@
 #include "utils/math.h"
 
 LedController::LedController(uint8_t pin) :
-        _rgb_mode(false), _r_pin(pin), _g_pin(0), _b_pin(0) {}
+    _rgb_mode(false), _r_pin(pin), _g_pin(0), _b_pin(0) {}
 
 LedController::LedController(uint8_t r_pin, uint8_t g_pin, uint8_t b_pin) :
-        _rgb_mode(true), _r_pin(r_pin), _g_pin(g_pin), _b_pin(b_pin) {}
+    _rgb_mode(true), _r_pin(r_pin), _g_pin(g_pin), _b_pin(b_pin) {}
 
 void LedController::begin() {
     pinMode(_r_pin, OUTPUT);
@@ -22,7 +22,7 @@ void LedController::begin() {
 
 void LedController::set_brightness(uint16_t value) {
     _brightness = PWM_MAX_VALUE - (uint16_t) floor(
-            log10f(10 - (float) value * 9 / PWM_MAX_VALUE) * PWM_MAX_VALUE);
+        log10f(10 - (float) value * 9 / PWM_MAX_VALUE) * PWM_MAX_VALUE);
 
     _analog_write();
 }

@@ -99,8 +99,8 @@ export class Config extends AppConfigBase {
         this.colorTemperatureRgb = this.colorTemperature;
 
         this.cctMode = this.ledType === 2;
-        this.sysConfig.ledCPin = this.sysConfig.ledRPin;
-        this.sysConfig.ledWPin = this.sysConfig.ledGPin;
+        this.sysConfig.ledWPin = this.sysConfig.ledRPin;
+        this.sysConfig.ledCPin = this.sysConfig.ledGPin;
 
         this.showTemperature = !this.singleLedMode;
     }

@@ -85,10 +85,19 @@ export class WheelControl extends InputControlBase {
 
     setAnchor(value) {
         this.#anchorPosition = value / this.limit;
+        this.element.style.setProperty("--anchor", this.#anchorPosition.toString());
     }
 
     setAnchorAmount(value) {
         this.#anchorAmount = Math.min(0.5, Math.max(value, 0));
+    }
+
+    setAnchored(enable) {
+        if (enable) {
+            this.addClass("wheel-anchored")
+        } else {
+            this.removeClass("wheel-anchored")
+        }
     }
 
     #defaultDisplayConverter() {

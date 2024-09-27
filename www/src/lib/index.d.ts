@@ -386,6 +386,7 @@ declare module "application.js" {
         min?: number;
         anchor?: number;
         anchorAmount?: number;
+        anchored?: boolean;
         displayConverter: (value: number) => string;
     }
 

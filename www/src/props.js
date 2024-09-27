@@ -16,7 +16,7 @@ export const PropertyConfig = [{
 
         {
             key: "colorTemperature", title: "Color Temperature", type: "wheel", limit: 32767, kind: "Uint16", cmd: PacketType.TEMPERATURE,
-            anchor: 16383, anchorAmount: 0.02, visibleIf: "cctMode",
+            anchor: 16383, anchorAmount: 0.02, anchored: true, visibleIf: "cctMode",
             displayConverter: function (value) {
                 const percent = value / this.limit * 100;
                 let converted;

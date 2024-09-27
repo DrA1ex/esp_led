@@ -317,6 +317,7 @@ export class ApplicationBase extends EventEmitter {
                         if (prop.displayConverter) control.setDisplayConverter(prop.displayConverter);
                         if (prop.anchor) control.setAnchor(prop.anchor);
                         if (prop.anchorAmount) control.setAnchorAmount(prop.anchorAmount);
+                        if (prop.anchored !== undefined) control.setAnchored(prop.anchored);
                         break;
 
                     case "time":

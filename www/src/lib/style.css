@@ -288,6 +288,7 @@ h4 {
 
 .input.wheel {
     --pos: 0;
+    --anchor: 0;
 
     position: relative;
     height: 2.4rem;
@@ -318,6 +319,15 @@ h4 {
     mask-image: linear-gradient(to bottom, transparent 75%, #000 75%),
     linear-gradient(to left, transparent var(--offset), #000 var(--offset));
     mask-composite: intersect;
+}
+
+.wheel.wheel-anchored::before {
+    --offset: calc(100% * (min(var(--pos), var(--anchor))));
+    --anchor-offset: calc(100% * (max(var(--pos), var(--anchor))));
+
+    mask-image: linear-gradient(to bottom, transparent 75%, #000 75%),
+    linear-gradient(to right, transparent var(--offset), #000 var(--offset),
+            #000 var(--anchor-offset), transparent var(--anchor-offset));
 }
 
 .wheel .option {

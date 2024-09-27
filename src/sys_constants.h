@@ -21,6 +21,7 @@
 #define PIN_ENABLED                             (HIGH)
 
 #define PWM_RESOLUTION                          (14u)
+#define PWM_FREQUENCY                           (22000u)
 #define PWM_MAX_VALUE                           ((uint16_t)((1u << PWM_RESOLUTION) - 1))
 
 #define NTP_UPDATE_INTERVAL                     (24ul * 3600 * 1000)

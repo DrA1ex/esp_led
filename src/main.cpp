@@ -22,6 +22,12 @@ void setup() {
 
     analogWriteResolution(PWM_RESOLUTION);
 
+#ifdef ARDUINO_ARCH_ESP8266
+    analogWriteFreq(PWM_FREQUENCY);
+#else
+    analogWriteFrequency(PWM_FREQUENCY);
+#endif
+
     ApplicationInstance.begin();
 }
 

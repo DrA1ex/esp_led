@@ -44,6 +44,7 @@ struct __attribute ((packed)) SysConfig {
 
     bool button_enabled = BUTTON_ENABLED;
     uint8_t button_pin = BUTTON_PIN;
+    bool button_high_state = BUTTON_HIGH_STATE;
 
     uint32_t power_change_timeout = POWER_CHANGE_TIMEOUT;
     uint32_t wifi_connect_flash_timeout = WIFI_CONNECT_FLASH_TIMEOUT;

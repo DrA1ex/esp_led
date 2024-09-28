@@ -27,6 +27,7 @@
 #define LED_MIN_BRIGHTNESS                      (1u)
 
 #define BUTTON_ENABLED                          (false)
+#define BUTTON_HIGH_STATE                       (true)
 #if ARDUINO_ARCH_ESP32
 #define BUTTON_PIN                              (3u)
 #else

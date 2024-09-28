@@ -1,5 +1,3 @@
-#include <LittleFS.h>
-
 #include "app/application.h"
 
 Application ApplicationInstance;

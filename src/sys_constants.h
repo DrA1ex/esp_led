@@ -37,5 +37,5 @@
 #define LED_MIN_TEMPERATURE                     (2700u)
 #define LED_MAX_TEMPERATURE                     (6000u)
 
-#define BRIGHTNESS_CHANGE_DIVIDER               (14u)
+#define BRIGHTNESS_CHANGE_DIVIDER               (20u)
 #define TEMPERATURE_CHANGE_STEPS                (4u)

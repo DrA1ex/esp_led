@@ -41,7 +41,7 @@ void Application::begin() {
     _api->begin(_bootstrap->web_server());
 
     if (sys_config.button_enabled) {
-        _btn = std::make_unique<Button>(sys_config.button_pin);
+        _btn = std::make_unique<Button>(sys_config.button_pin, sys_config.button_high_state);
 
         _btn->set_on_click([this](auto cnt) {
             if (cnt == 1) {
@@ -181,18 +181,18 @@ void Application::brightness_increase() {
 
     config().brightness = std::min<uint16_t>(PWM_MAX_VALUE,
         config().brightness + max<uint16_t>(1, config().brightness / BRIGHTNESS_CHANGE_DIVIDER));
-    _bootstrap->save_changes();
 
     D_PRINTF("Increase brightness: %u\r\n", config().brightness);
+    update();
 }
 
 void Application::brightness_decrease() {
     if (config().brightness == 0) return;
 
     config().brightness = std::max(0, config().brightness - std::max<uint16_t>(1, config().brightness / BRIGHTNESS_CHANGE_DIVIDER));
-    _bootstrap->save_changes();
 
     D_PRINTF("Decrease brightness: %u\r\n", config().brightness);
+    update();
 }
 
 void Application::trigger_temperature() {
@@ -205,6 +205,8 @@ void Application::trigger_temperature() {
     config().color_temperature = std::min<uint16_t>(current_step * value_step, LED_TEMPERATURE_MAX_VALUE);
 
     D_PRINTF("Change temperature: %u\r\n", config().color_temperature);
+
+    update();
     NotificationBus::get().notify_parameter_changed(this, _metadata->color_temperature.get_parameter());
 }
 

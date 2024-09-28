@@ -77,6 +77,7 @@ export class Config extends AppConfigBase {
 
             button_enabled: parser.readBoolean(),
             button_pin: parser.readUint8(),
+            button_high_state: parser.readBoolean(),
 
             powerChangeTimeout: parser.readUint32(),
             wifiConnectFlashTimeout: parser.readUint32(),

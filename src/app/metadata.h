@@ -32,6 +32,9 @@ DECLARE_META(SysConfigMeta, AppMetaProperty,
     MEMBER(Parameter<uint16_t>, led_min_brightness),
     MEMBER(Parameter<uint16_t>, led_min_temperature),
     MEMBER(Parameter<uint16_t>, led_max_temperature),
+    MEMBER(Parameter<bool>, button_enabled),
+    MEMBER(Parameter<uint8_t>, button_pin),
+    MEMBER(Parameter<bool>, button_high_state),
     MEMBER(Parameter<uint32_t>, power_change_timeout),
     MEMBER(Parameter<uint32_t>, wifi_connect_flash_timeout),
     MEMBER(Parameter<float>, time_zone),
@@ -163,6 +166,18 @@ inline ConfigMetadata build_metadata(Config &config) {
             .led_max_temperature = {
                 PacketType::SYS_CONFIG_LED_MAX_TEMPERATURE,
                 &config.sys_config.led_max_temperature
+            },
+            .button_enabled = {
+                PacketType::SYS_CONFIG_BUTTON_ENABLED,
+                &config.sys_config.button_enabled
+            },
+            .button_pin = {
+                PacketType::SYS_CONFIG_BUTTON_PIN,
+                &config.sys_config.button_pin
+            },
+            .button_high_state = {
+                PacketType::SYS_CONFIG_BUTTON_HIGH_STATE,
+                &config.sys_config.button_high_state
             },
             .power_change_timeout = {
                 PacketType::SYS_CONFIG_POWER_CHANGE_TIMEOUT,

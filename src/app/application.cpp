@@ -178,7 +178,7 @@ void Application::_app_loop() {
                     PWM_MAX_VALUE
                 );
 
-                uint16_t brightness = _brightness() * cubic_wave16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
+                uint16_t brightness = _brightness() * quad_wave16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
                 _led->set_brightness(brightness);
             }
         }
@@ -187,7 +187,7 @@ void Application::_app_loop() {
         case AppState::TURNING_ON: {
             uint16_t factor = std::min<unsigned long>(PWM_MAX_VALUE,
                 (millis() - _state_change_time) * PWM_MAX_VALUE / sys_config().power_change_timeout);
-            uint16_t brightness = (uint16_t) _brightness() * ease_cubic16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
+            uint16_t brightness = (uint16_t) _brightness() * ease_quad16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
             _led->set_brightness(brightness);
 
             if (factor == PWM_MAX_VALUE) change_state(AppState::STAND_BY);
@@ -197,7 +197,7 @@ void Application::_app_loop() {
         case AppState::TURNING_OFF: {
             uint16_t factor = PWM_MAX_VALUE - std::min<unsigned long>(PWM_MAX_VALUE,
                 (millis() - _state_change_time) * PWM_MAX_VALUE / sys_config().power_change_timeout);
-            uint16_t brightness = (uint16_t) _brightness() * ease_cubic16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
+            uint16_t brightness = (uint16_t) _brightness() * ease_quad16(factor, PWM_MAX_VALUE) / PWM_MAX_VALUE;
             _led->set_brightness(brightness);
 
             if (factor == 0) change_state(AppState::STAND_BY);

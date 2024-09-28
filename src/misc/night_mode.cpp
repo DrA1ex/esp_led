@@ -32,9 +32,7 @@ void NightModeManager::handle_night(const NtpTime &ntp_time) {
 uint16_t NightModeManager::get_brightness() const {
     if (!is_night_time()) { return {}; }
 
-    const uint16_t brightness = smooth16(_config.brightness, _config.night_mode.brightness, _fade_factor);
-
-    return brightness;
+    return smooth16(_config.brightness, _config.night_mode.brightness, _fade_factor);
 }
 
 void NightModeManager::reset() {

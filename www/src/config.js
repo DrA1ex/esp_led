@@ -75,6 +75,9 @@ export class Config extends AppConfigBase {
             ledMinTemperature: parser.readUint16(),
             ledMaxTemperature: parser.readUint16(),
 
+            button_enabled: parser.readBoolean(),
+            button_pin: parser.readUint8(),
+
             powerChangeTimeout: parser.readUint32(),
             wifiConnectFlashTimeout: parser.readUint32(),
 

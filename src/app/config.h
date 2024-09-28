@@ -42,6 +42,9 @@ struct __attribute ((packed)) SysConfig {
     uint16_t led_min_temperature = LED_MIN_TEMPERATURE;
     uint16_t led_max_temperature = LED_MAX_TEMPERATURE;
 
+    bool button_enabled = BUTTON_ENABLED;
+    uint8_t button_pin = BUTTON_PIN;
+
     uint32_t power_change_timeout = POWER_CHANGE_TIMEOUT;
     uint32_t wifi_connect_flash_timeout = WIFI_CONNECT_FLASH_TIMEOUT;
 

@@ -26,6 +26,13 @@
 
 #define LED_MIN_BRIGHTNESS                      (1u)
 
+#define BUTTON_ENABLED                          (false)
+#if ARDUINO_ARCH_ESP32
+#define BUTTON_PIN                              (3u)
+#else
+#define BUTTON_PIN                              (13u)
+#endif
+
 #define POWER_CHANGE_TIMEOUT                    (1000u)                // Timeout for power change animation
 #define WIFI_CONNECT_FLASH_TIMEOUT              (3000u)
 

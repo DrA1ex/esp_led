@@ -40,6 +40,34 @@ void Application::begin() {
     _api = std::make_unique<ApiWebServer>(*this);
     _api->begin(_bootstrap->web_server());
 
+    if (sys_config.button_enabled) {
+        _btn = std::make_unique<Button>(sys_config.button_pin);
+
+        _btn->set_on_click([this](auto cnt) {
+            if (cnt == 1) {
+                this->set_power(!config().power);
+            } else if (cnt == 2) {
+                trigger_temperature();
+            }
+        });
+
+        _btn->set_on_hold([this](auto cnt) {
+            if (cnt == 1) {
+                this->brightness_increase();
+            } else if (cnt == 2) {
+                this->brightness_decrease();
+            }
+        });
+
+        _btn->set_on_hold_release([this](auto cnt) {
+            if (cnt <= 2) {
+                NotificationBus::get().notify_parameter_changed(this, _metadata->brightness.get_parameter());
+            }
+        });
+
+        _btn->begin();
+    }
+
     _bootstrap->event_state_changed().subscribe(this, [this](auto sender, auto state, auto arg) {
         _bootstrap_state_changed(sender, state, arg);
     });
@@ -143,6 +171,41 @@ void Application::set_power(bool on) {
     }
 
     _bootstrap->save_changes();
+    NotificationBus::get().notify_parameter_changed(this, _metadata->power.get_parameter());
+}
+
+void Application::brightness_increase() {
+    if (config().brightness == PWM_MAX_VALUE) return;
+
+    if (!config().power) set_power(true);
+
+    config().brightness = std::min<uint16_t>(PWM_MAX_VALUE,
+        config().brightness + max<uint16_t>(1, config().brightness / BRIGHTNESS_CHANGE_DIVIDER));
+    _bootstrap->save_changes();
+
+    D_PRINTF("Increase brightness: %u\r\n", config().brightness);
+}
+
+void Application::brightness_decrease() {
+    if (config().brightness == 0) return;
+
+    config().brightness = std::max(0, config().brightness - std::max<uint16_t>(1, config().brightness / BRIGHTNESS_CHANGE_DIVIDER));
+    _bootstrap->save_changes();
+
+    D_PRINTF("Decrease brightness: %u\r\n", config().brightness);
+}
+
+void Application::trigger_temperature() {
+    if (sys_config().led_type == LedType::SINGLE) return;
+
+    constexpr float value_step = (float) LED_TEMPERATURE_MAX_VALUE / TEMPERATURE_CHANGE_STEPS;
+    uint8_t current_step = ceil(config().color_temperature / value_step);
+    if (++current_step > TEMPERATURE_CHANGE_STEPS) current_step = 0;
+
+    config().color_temperature = std::min<uint16_t>(current_step * value_step, LED_TEMPERATURE_MAX_VALUE);
+
+    D_PRINTF("Change temperature: %u\r\n", config().color_temperature);
+    NotificationBus::get().notify_parameter_changed(this, _metadata->color_temperature.get_parameter());
 }
 
 uint16_t Application::_brightness() {
@@ -211,6 +274,8 @@ void Application::_app_loop() {
             }
             break;
     }
+
+    if (_btn) _btn->handle();
 }
 
 void Application::_service_loop() {

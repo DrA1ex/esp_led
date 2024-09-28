@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lib/bootstrap.h"
+#include "lib/misc/button.h"
 #include "lib/misc/ntp_time.h"
 
 #include "config.h"
@@ -8,7 +9,6 @@
 #include "network/api.h"
 #include "misc/night_mode.h"
 #include "misc/led.h"
-#include "utils/math.h"
 
 class Application {
     std::unique_ptr<Bootstrap<Config, PacketType>> _bootstrap = nullptr;
@@ -17,6 +17,7 @@ class Application {
     std::unique_ptr<NtpTime> _ntp_time = nullptr;
     std::unique_ptr<ApiWebServer> _api = nullptr;
     std::unique_ptr<LedController> _led = nullptr;
+    std::unique_ptr<Button> _btn = nullptr;
 
     bool _initialized = false;
 
@@ -34,6 +35,10 @@ public:
 
     void change_state(AppState s);
     void set_power(bool on);
+
+    void brightness_increase();
+    void brightness_decrease();
+    void trigger_temperature();
 
     void load();
     void update();

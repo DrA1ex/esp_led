@@ -68,6 +68,10 @@ export const PropertyConfig = [{
         {key: "sysConfig.wifiConnectionCheckInterval", title: "Connection Check Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_CONNECTION_CHECK_INTERVAL},
         {key: "sysConfig.wifiMaxConnectionAttemptInterval", title: "Max Connection Attempt Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL},
 
+        {type: "title", label: "Button"},
+        {key: "sysConfig.button_enabled", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.MOTION_CONFIG_BUTTON_ENABLED},
+        {key: "sysConfig.button_pin", title: "Pin", type: "int", kind: "Uint8", cmd: PacketType.MOTION_CONFIG_BUTTON_PIN, min: 0, max: 32},
+
         {type: "title", label: "LED"},
         {key: "ledType", title: "LED Type", type: "select", kind: "Uint8", cmd: PacketType.SYS_LED_TYPE, list: "ledType"},
 

@@ -24,13 +24,17 @@ Other: [[RGB LED LAMP](https://github.com/DrA1ex/esp_led_lamp)] [[RELAY](https:/
 
 ## Connection
 
-![image](https://github.com/user-attachments/assets/793dc957-1312-4eb5-bbee-432d5c9db3fc)
+<img width="800" alt="White Strip" src="https://github.com/user-attachments/assets/793dc957-1312-4eb5-bbee-432d5c9db3fc">
+<img width="800" alt="RGB Strip" src="https://github.com/user-attachments/assets/7a4982e1-5233-4a79-b179-5b2e6aeb8790">
+
 
 This is a basic connection scheme. You can use any pin for the connection (just change it in `constants.h`).
 
 To safeguard your controller, I recommend connecting a 200-ohm resistor between the MOSFET and the controller pin. Additionally, connect the MOSFET's gate to GND using a 10k-ohm resistor to prevent unwanted activation due to induced currents.
 
-For RGB/CCT connections, the setup is similar, but you will need three separate MOSFETs for each color channel.
+For RGB/CCT connections, the setup is similar, but you will need multiple separate MOSFETs for each color channel.
+
+If you encounter button interference issues, use a ceramic capacitor of approximately 0.47uF between the button legs. This will create an RC Filter and stabilize the signal.
 
 ## Installation
 

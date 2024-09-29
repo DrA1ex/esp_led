@@ -21,9 +21,9 @@ void setup() {
     analogWriteResolution(PWM_RESOLUTION);
 
 #ifdef ARDUINO_ARCH_ESP8266
-    analogWriteFreq(PWM_FREQUENCY);
+    analogWriteFreq(std::min<uint32_t>(PWM_FREQUENCY, PWM_MAX_FREQUENCY));
 #else
-    analogWriteFrequency(PWM_FREQUENCY);
+    analogWriteFrequency(std::min<uint32_t>(PWM_FREQUENCY, PWM_MAX_FREQUENCY));
 #endif
 
     ApplicationInstance.begin();

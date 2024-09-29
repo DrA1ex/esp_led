@@ -1,4 +1,5 @@
 import {PacketType} from "./cmd.js";
+import {PWM_MAX_VALUE, TEMPERATURE_MAX_VALUE} from "./sys_constants.js";
 
 /**@type {PropertiesConfig} */
 export const PropertyConfig = [{
@@ -9,14 +10,14 @@ export const PropertyConfig = [{
         {key: "showTemperature", type: "skip"},
 
         {key: "power", title: "Power", type: "trigger", kind: "Boolean", cmd: PacketType.POWER},
-        {key: "brightness", title: "Brightness", type: "wheel", limit: 16383, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
+        {key: "brightness", title: "Brightness", type: "wheel", limit: PWM_MAX_VALUE, kind: "Uint16", cmd: PacketType.BRIGHTNESS},
 
         {key: "color", title: "Color", type: "color", kind: "Uint32", cmd: PacketType.COLOR, visibleIf: "rgbMode"},
         {key: "calibration", title: "Calibration", type: "color", kind: "Uint32", cmd: PacketType.CALIBRATION, visibleIf: "rgbMode"},
 
         {
-            key: "colorTemperature", title: "Color Temperature", type: "wheel", limit: 32767, kind: "Uint16", cmd: PacketType.TEMPERATURE,
-            anchor: 16383, anchorAmount: 0.02, anchored: true, visibleIf: "cctMode",
+            key: "colorTemperature", title: "Color Temperature", type: "wheel", limit: TEMPERATURE_MAX_VALUE, kind: "Uint16", cmd: PacketType.TEMPERATURE,
+            anchor: TEMPERATURE_MAX_VALUE / 2, anchorAmount: 0.02, anchored: true, visibleIf: "cctMode",
             displayConverter: function (value) {
                 const percent = value / this.limit * 100;
                 let converted;
@@ -29,14 +30,14 @@ export const PropertyConfig = [{
 
                 let [int, fraction] = converted.toFixed(1).split(".");
                 if (converted > 0) int = `+${int}`;
-                if(int === "-0") int = "0";
+                if (int === "-0") int = "0";
 
                 return fraction === "0" ? int : [int, `.${fraction}`];
             }
         },
 
         {
-            key: "colorTemperatureRgb", title: "Color Temperature", type: "wheel", limit: 32767, kind: "Uint16", cmd: PacketType.TEMPERATURE,
+            key: "colorTemperatureRgb", title: "Color Temperature", type: "wheel", limit: TEMPERATURE_MAX_VALUE, kind: "Uint16", cmd: PacketType.TEMPERATURE,
             visibleIf: "rgbMode",
             displayConverter: function (value) {
                 const {sysConfig: {ledMinTemperature, ledMaxTemperature}} = window.__app.app.config
@@ -50,7 +51,7 @@ export const PropertyConfig = [{
 }, {
     key: "night_mode", section: "Night Mode", collapse: true, props: [
         {key: "nightMode.enabled", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.NIGHT_MODE_ENABLED},
-        {key: "nightMode.brightness", title: "Brightness", type: "wheel", limit: 16383, kind: "Uint16", cmd: PacketType.NIGHT_MODE_BRIGHTNESS},
+        {key: "nightMode.brightness", title: "Brightness", type: "wheel", limit: PWM_MAX_VALUE, kind: "Uint16", cmd: PacketType.NIGHT_MODE_BRIGHTNESS},
         {key: "nightMode.startTime", title: "Start Time", type: "time", kind: "Uint32", cmd: PacketType.NIGHT_MODE_START},
         {key: "nightMode.endTime", title: "End Time", type: "time", kind: "Uint32", cmd: PacketType.NIGHT_MODE_END},
         {key: "nightMode.switchInterval", title: "Switch Interval", type: "time", kind: "Uint16", cmd: PacketType.NIGHT_MODE_INTERVAL},

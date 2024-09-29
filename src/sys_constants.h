@@ -24,6 +24,12 @@
 #define PWM_FREQUENCY                           (22000u)
 #define PWM_MAX_VALUE                           ((uint16_t)((1u << PWM_RESOLUTION) - 1))
 
+#ifdef ARDUINO_ARCH_ESP32
+#define PWM_MAX_FREQUENCY                       (40000000ul / (1u << PWM_RESOLUTION))
+#else
+#define PWM_MAX_FREQUENCY                       (60000ul)
+#endif
+
 #define NTP_UPDATE_INTERVAL                     (24ul * 3600 * 1000)
 
 #define GAMMA                                   (2.2f)

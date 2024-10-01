@@ -57,23 +57,7 @@ export const PropertyConfig = [{
         {key: "nightMode.switchInterval", title: "Switch Interval", type: "time", kind: "Uint16", cmd: PacketType.NIGHT_MODE_INTERVAL},
     ]
 }, {
-    key: "settings", section: "Settings", collapse: "true", props: [
-        {key: "sysConfig.mdnsName", title: "mDNS Name", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_MDNS_NAME},
-
-        {type: "title", label: "WiFi"},
-        {key: "sysConfig.wifiMode", title: "Mode", type: "select", kind: "Uint8", cmd: PacketType.SYS_CONFIG_WIFI_MODE, list: "wifiMode"},
-        {key: "sysConfig.wifiSsid", title: "WiFi SSID", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_WIFI_SSID},
-        {key: "sysConfig.wifiPassword", title: "WiFi Password", type: "password", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_WIFI_PASSWORD},
-
-        {type: "title", label: "WiFi Extra"},
-        {key: "sysConfig.wifiConnectionCheckInterval", title: "Connection Check Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_CONNECTION_CHECK_INTERVAL},
-        {key: "sysConfig.wifiMaxConnectionAttemptInterval", title: "Max Connection Attempt Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL},
-
-        {type: "title", label: "Button"},
-        {key: "sysConfig.button_enabled", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_BUTTON_ENABLED},
-        {key: "sysConfig.button_pin", title: "Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_BUTTON_PIN, min: 0, max: 32},
-        {key: "sysConfig.button_high_state", title: "High State", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_BUTTON_HIGH_STATE},
-
+    key: "led_settings", section: "LED Settings", collapse: true, props: [
         {type: "title", label: "LED"},
         {key: "ledType", title: "LED Type", type: "select", kind: "Uint8", cmd: PacketType.SYS_LED_TYPE, list: "ledType"},
 
@@ -90,6 +74,27 @@ export const PropertyConfig = [{
         {key: "sysConfig.ledMinTemperature", title: "Min Temperature", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MIN_TEMPERATURE, visibleIf: "showTemperature"},
         {key: "sysConfig.ledMaxTemperature", title: "Max Temperature", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MAX_TEMPERATURE, visibleIf: "showTemperature"},
         {key: "sysConfig.ledMinBrightness", title: "Min Brightness", type: "int", kind: "Uint16", cmd: PacketType.SYS_CONFIG_LED_MIN_BRIGHTNESS},
+
+        {type: "title", label: "Actions", extra: {m_top: true}},
+        {key: "apply_led_config", type: "button", label: "Apply Settings"}
+    ]
+},{
+    key: "settings", section: "Settings", collapse: "true", props: [
+        {key: "sysConfig.mdnsName", title: "mDNS Name", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_MDNS_NAME},
+
+        {type: "title", label: "WiFi"},
+        {key: "sysConfig.wifiMode", title: "Mode", type: "select", kind: "Uint8", cmd: PacketType.SYS_CONFIG_WIFI_MODE, list: "wifiMode"},
+        {key: "sysConfig.wifiSsid", title: "WiFi SSID", type: "text", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_WIFI_SSID},
+        {key: "sysConfig.wifiPassword", title: "WiFi Password", type: "password", kind: "FixedString", maxLength: 32, cmd: PacketType.SYS_CONFIG_WIFI_PASSWORD},
+
+        {type: "title", label: "WiFi Extra"},
+        {key: "sysConfig.wifiConnectionCheckInterval", title: "Connection Check Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_CONNECTION_CHECK_INTERVAL},
+        {key: "sysConfig.wifiMaxConnectionAttemptInterval", title: "Max Connection Attempt Interval", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_WIFI_MAX_CONNECTION_ATTEMPT_INTERVAL},
+
+        {type: "title", label: "Button"},
+        {key: "sysConfig.button_enabled", title: "Enabled", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_BUTTON_ENABLED},
+        {key: "sysConfig.button_pin", title: "Pin", type: "int", kind: "Uint8", cmd: PacketType.SYS_CONFIG_BUTTON_PIN, min: 0, max: 32},
+        {key: "sysConfig.button_high_state", title: "High State", type: "trigger", kind: "Boolean", cmd: PacketType.SYS_CONFIG_BUTTON_HIGH_STATE},
 
         {type: "title", label: "SYSTEM EXTRA"},
         {key: "sysConfig.powerChangeTimeout", title: "Power Change Timeout", type: "int", kind: "Uint32", cmd: PacketType.SYS_CONFIG_POWER_CHANGE_TIMEOUT},

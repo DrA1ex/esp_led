@@ -24,11 +24,11 @@ if ("serviceWorker" in navigator) {
 const StatusElement = document.getElementById("status");
 
 const app = new Application(gateway);
-app.subscribe(this, app.Event.Connected, () => {
+app.subscribe(window, app.Event.Connected, () => {
     StatusElement.style.visibility = "collapse";
 });
 
-app.subscribe(this, app.Event.Disconnected, () => {
+app.subscribe(window, app.Event.Disconnected, () => {
     StatusElement.innerText = "NOT CONNECTED";
     StatusElement.style.visibility = "visible";
 });

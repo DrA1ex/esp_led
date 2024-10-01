@@ -1,4 +1,4 @@
-import {ApplicationBase} from "./lib/index.js";
+import {AppConfigBase, ApplicationBase} from "./lib/index.js";
 import {Config} from "./config.js";
 import {PropertyConfig} from "./props.js";
 
@@ -15,6 +15,7 @@ import {PacketType} from "./cmd.js";
 
 export class Application extends ApplicationBase {
     #config;
+    #reHost = /([?&]host=)(.*)(?:$|&)/;
 
     get propertyConfig() {return PropertyConfig;}
 
@@ -43,6 +44,9 @@ export class Application extends ApplicationBase {
         await super.begin(root);
 
         this.propertyMeta["apply_sys_config"].control.setOnClick(this.applySysConfig.bind(this));
+        this.propertyMeta["apply_led_config"].control.setOnClick(this.applySysConfig.bind(this));
+
+        this.subscribe(this, this.Event.PropertyCommited, this.onPropCommited.bind(this));
     }
 
     async applySysConfig(sender) {
@@ -53,24 +57,44 @@ export class Application extends ApplicationBase {
         try {
             await this.ws.request(PacketType.RESTART);
 
-            let new_url
-            if (location.hostname !== "localhost") {
+            const newHostname = this.config.sysConfig.mdnsName + ".local";
+            const hostQueryMatch = location.search.match(this.#reHost);
+            if (hostQueryMatch && hostQueryMatch[2] !== newHostname) {
+                const new_url = location.search.replace(this.#reHost, `$1${newHostname}`)
+                setTimeout(() => window.location = new_url, 3000);
+            } else if (!hostQueryMatch && location.hostname !== "localhost" && location.hostname !== newHostname) {
                 const url_parts = [
                     location.protocol + "//",
-                    this.config.sysConfig.mdnsName + ".local",
+                    newHostname,
                     location.port ? ":" + location.port : "",
                     "/?" + (location.href.split("?")[1] ?? "")
                 ]
 
-                new_url = url_parts.join("");
+                const new_url = url_parts.join("");
+                setTimeout(() => window.location = new_url, 3000);
             } else {
-                new_url = location.href;
+                setTimeout(() => window.location.reload(), 3000);
             }
-
-            setTimeout(() => window.location = new_url, 3000);
         } catch (err) {
             console.log("Unable to send restart signal", err);
             sender.setAttribute("data-saving", false);
+        }
+    }
+
+    onPropCommited(config, {key}) {
+        if (key === "ledType") {
+            this.config.refreshLedMode();
+
+            for (const propKey of [
+                "sysConfig.ledRPin",
+                "sysConfig.ledGPin",
+                "sysConfig.ledBPin",
+                "sysConfig.ledWPin",
+                "sysConfig.ledCPin",
+                "sysConfig.ledPin"
+            ]) {
+                this.emitEvent(this.Event.Notification, {key: propKey, value: this.config.getProperty(propKey)});
+            }
         }
     }
 }

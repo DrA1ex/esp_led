@@ -96,6 +96,10 @@ export class Config extends AppConfigBase {
             mqttConvertBrightness: parser.readBoolean(),
         };
 
+        this.refreshLedMode();
+    }
+
+    refreshLedMode() {
         this.singleLedMode = this.ledType === 0;
         this.sysConfig.ledPin = this.sysConfig.ledRPin;
 

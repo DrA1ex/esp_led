@@ -2,3 +2,7 @@
 	path = src/lib
 	url = ../esp-iot-framework.git
 	branch = main
+[submodule "www/src/lib"]
+	path = www/src/lib
+	url = ../web-iot-framework
+	branch = main

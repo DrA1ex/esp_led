@@ -65,6 +65,7 @@ void Application::begin() {
             }
         });
 
+        _btn->set_hold_call_interval(BTN_HOLD_CALL_INTERVAL);
         _btn->begin();
     }
 
@@ -162,12 +163,15 @@ void Application::change_state(AppState s) {
     D_PRINTF("Change app state: %s\r\n", __debug_enum_str(s));
 }
 
-void Application::set_power(bool on) {
+void Application::set_power(bool on, bool skip_animation) {
     config().power = on;
 
     D_PRINTF("Turning Power: %s\r\n", on ? "ON" : "OFF");
-    if (_state != AppState::INITIALIZATION) {
+    if (!skip_animation && _state != AppState::INITIALIZATION) {
         change_state(on ? AppState::TURNING_ON : AppState::TURNING_OFF);
+    } else {
+        change_state(AppState::STAND_BY);
+        load();
     }
 
     _bootstrap->save_changes();
@@ -175,12 +179,11 @@ void Application::set_power(bool on) {
 }
 
 void Application::brightness_increase() {
+    if (!config().power) set_power(true, true);
+
     if (config().brightness == PWM_MAX_VALUE) return;
 
-    if (!config().power) set_power(true);
-
-    config().brightness = std::min<uint16_t>(PWM_MAX_VALUE,
-        config().brightness + max<uint16_t>(1, config().brightness / BRIGHTNESS_CHANGE_DIVIDER));
+    config().brightness = std::min<uint16_t>(PWM_MAX_VALUE, config().brightness + max<uint16_t>(1, PWM_MAX_VALUE / BRIGHTNESS_CHANGE_DIVIDER));
 
     D_PRINTF("Increase brightness: %u\r\n", config().brightness);
     update();
@@ -189,7 +192,7 @@ void Application::brightness_increase() {
 void Application::brightness_decrease() {
     if (config().brightness == 0) return;
 
-    config().brightness = std::max(0, config().brightness - std::max<uint16_t>(1, config().brightness / BRIGHTNESS_CHANGE_DIVIDER));
+    config().brightness = std::max(0, config().brightness - std::max<uint16_t>(1, PWM_MAX_VALUE / BRIGHTNESS_CHANGE_DIVIDER));
 
     D_PRINTF("Decrease brightness: %u\r\n", config().brightness);
     update();

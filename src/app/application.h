@@ -34,7 +34,7 @@ public:
     void event_loop();
 
     void change_state(AppState s);
-    void set_power(bool on);
+    void set_power(bool on, bool skip_animation = false);
 
     void brightness_increase();
     void brightness_decrease();
